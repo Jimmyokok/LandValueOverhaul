@@ -1,0 +1,9 @@
+{
+    "name": "LandValueOverhaul",
+    "version_number": "1.3.0",
+    "website_url": "https://github.com/Jimmyokok/LandValueOverhaul",
+    "description": "Overhaul on the game's land value, rent & building upgrade mechanisms.",
+    "dependencies": [
+        "BepInEx-BepInExPack-5.4.2100"
+    ]
+}

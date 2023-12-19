@@ -1,0 +1,107 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- 
+		Base csproj setup. Change the AssemblyName, RootNamespace and Description to
+		accurately describe your mod.
+		
+		Increment the Version property when you release a new version.
+	-->
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<AssemblyName>LandValueOverhaul</AssemblyName>
+		<Description>Overhaul on the game's land value, rent and building upgrade mechanisms.</Description>
+		<Version>1.3.0</Version>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<LangVersion>latest</LangVersion>
+		<RestoreAdditionalProjectSources>
+			https://api.nuget.org/v3/index.json;
+			https://nuget.bepinex.dev/v3/index.json;
+			https://nuget.samboy.dev/v3/index.json
+		</RestoreAdditionalProjectSources>
+		<!-- Copies references we make to 3rd party library for distributions -->
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<!-- Suppress the version conflict warnings for System.Net.Http and System.IO.Compression -->
+		<NoWarn>MSB3277</NoWarn>
+	</PropertyGroup>
+
+	<!--
+		Uncomment this PropertyGroup to let the C# project read DLLs directory from your game directory,
+		and also allow the build to move the mod DLLs into the plugins directory for you
+	-->
+	<PropertyGroup>
+		<Cities2_Location>C:\Program Files (x86)\Steam\steamapps\common\Cities Skylines II</Cities2_Location>
+	</PropertyGroup>
+
+	<!--
+		This is all the references to the DLLs directly from your game directory. The Cities2_Location property
+		above needs to be uncommented for this to work
+	-->
+	<ItemGroup>
+        <Reference Include="$(Cities2_Location)\Cities2_Data\Managed\Colossal.*.dll" Private="False" />
+        <Reference Include="$(Cities2_Location)\Cities2_Data\Managed\Game.dll" Private="False" />
+        <Reference Include="$(Cities2_Location)\Cities2_Data\Managed\Unity.*.dll" Private="False" />
+	</ItemGroup>
+
+	<!--
+		If you want to embed things directly into your mod, instead of shipping multiple files
+	<ItemGroup>
+	  <EmbeddedResource Include="./resources/my_pretty_embedded_image.jpg" />
+	</ItemGroup>
+	-->
+
+	<!--
+		This ItemGroup is used in CI for the game DLLs.
+		Make sure you have a private `libcs2` repository with the appropriate DLLs for this to work.
+		DO NOT make the proprietary DLLs for the game public, as the files are owned by PDX/CO. 
+	-->
+	<ItemGroup>
+		<Reference Include="libcs2/Colossal.*.dll" Private="False" />
+		<Reference Include="libcs2/Game.dll" Private="False" />
+		<Reference Include="libcs2/Unity.*.dll" Private="False" />
+	</ItemGroup>
+
+	<!--
+		Everything related to BepInEx and Harmony
+	-->
+	<ItemGroup>
+		<PackageReference Include="BepInEx.PluginInfoProps" Version="2.0.0" />
+		<PackageReference Include="HarmonyX" Version="2.10.2"></PackageReference>
+		<PackageReference Include="UnityEngine.Modules" Version="2022.3.7" IncludeAssets="compile" />
+	</ItemGroup>
+
+	<!-- Set the default value for BepInExVersion -->
+	<PropertyGroup>
+		<BepInExVersion Condition="'$(BepInExVersion)' == ''">5</BepInExVersion>
+		<RootNamespace>LandValueOverhaul</RootNamespace>
+	</PropertyGroup>
+
+	<!--
+		These ItemGroups and PropertyGroups gives you compatibility with both BepInEx 5 and 6.
+		Mainly for the purposes of being able to distribute your mods on Thunderstore, and
+		making it easy to upgrade in the future to proper versions.
+	-->
+	<ItemGroup Condition="'$(BepInExVersion)' == '6'">
+		<PackageReference Include="BepInEx.Unity.Mono" Version="6.0.0-be.*" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(BepInExVersion)' == '5'">
+		<PackageReference Include="BepInEx.Core" Version="5.4.21" IncludeAssets="compile" />
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(BepInExVersion)' == '6'">
+		<DefineConstants>$(DefineConstants);BEPINEX_V6</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+		<PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+	</ItemGroup>
+
+	<!--
+		This will try to copy the resulting DLLs from builds directly into your game directory,
+		as long as we're not in CI
+	-->
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(CI)' != 'true'">
+		<Exec Command="if not exist &quot;$(Cities2_Location)\BepInEx\plugins\$(ProjectName)&quot; mkdir &quot;$(Cities2_Location)\BepInEx\plugins\$(ProjectName)&quot;&#xD;&#xA;copy /Y &quot;$(TargetDir)0Harmony.dll&quot; &quot;$(Cities2_Location)\BepInEx\plugins\$(ProjectName)\0Harmony.dll&quot;&#xD;&#xA;copy /Y &quot;$(TargetDir)$(ProjectName).dll&quot; &quot;$(Cities2_Location)\BepInEx\plugins\$(ProjectName)\$(ProjectName).dll&quot;" />
+	</Target>
+</Project>
