@@ -36,31 +36,31 @@
 ### The Game's Land Value(LV), Rent & Building Upgrade Mechanisms
 
 - The LV update mechanism: the land value is actually LV of **road edges**. The LV of a road edge will be updated according to the *maximum willing-to-pay rent (denoted as maxRent.x)* of all renters of all properties on the road edge. The game's original update rules are as follows:
-    - For an individual renter, if $maxRent.x< 3 * SharedLV + SharedBuildingUpkeep$ , the renter feels the rent is too high.
+    - For an individual renter, if $$maxRent.x< 3 * SharedLV + SharedBuildingUpkeep$$ , the renter feels the rent is too high.
     - If 50% of all renters feel the rent is too high, the LV will fall and vice versa.
 - The LV spreading mechanism: both the land value and the land value weight of the two ends of a road edge will fade with distance. A fade factor controls its speed, with a default setting of 2000m.
 - The game's original rent mechanism：
-    - Rent of a property renter equals $SharedLV + SharedBuildingUpkeep$,
-    - We denote the *maximum willing-to-pay rent as maxRent.x*. If $rent > maxRent.x$, rent will slowly move towards maxRent.x,
-    - We denote the *maximum affordable rent as maxRent.y*. If $rent > maxRent.y$, **the renter will try to find other properties, preparing to move away**,
+    - Rent of a property renter equals $$SharedLV + SharedBuildingUpkeep$$,
+    - We denote the *maximum willing-to-pay rent as maxRent.x*. If $$rent > maxRent.x$$, rent will slowly move towards maxRent.x,
+    - We denote the *maximum affordable rent as maxRent.y*. If $$rent > maxRent.y$$, **the renter will try to find other properties, preparing to move away**,
     - For residential property renters, maxRent.x is determined by numerous factors, such as their life quality, household income and life expenses. maxRent.x of residential renters will not exceed 45% of their household income. **Meanwhile, their maxRent.y equals maxRent.x**,
     - For company renters, their maxRent.x equals their after-tax profit and maxRent.y equals their employee-maximized after-tax profit,
-    - This mechanism is neither reasonable nor realistic. **The renter's maximum affordable rent do not and should not equals the maximum rent that he is willing to pay.** The following case shows how explosive profit/income leads to explosive LV, where a 4\*4 office building is *willing to pay a 3.39million rent* and pushes the LV to 10.08 million ($InGameLV = 240 * LV$)：
+    - This mechanism is neither reasonable nor realistic. **The renter's maximum affordable rent do not and should not equals the maximum rent that he is willing to pay.** The following case shows how explosive profit/income leads to explosive LV, where a 4\*4 office building is *willing to pay a 3.39million rent* and pushes the LV to 10.08 million ($$InGameLV = 240 * LV$$)：
       
         ![Untitled](img/Untitled.png)
         
     - Meanwhile, the area of low density residential buildings are similar to medium and high density ones, while they only contain one household. Using ExtendedTooltips or the DeveloperMode, it can be clearly observed that **per-household rent** **of low densities are much higher** than medium and high densities on the same road edge.
 - The building upgrade and abandon mechanism：
     - **Different from the game's description**, *all* rent paid by property renters contribute to the building upgrade progress, while **the building upkeep and the garbage fee is actually paid from the building upgrade progress**.
-    - When $BuildingUpgradeProgress > BuildingUpgradeCost$, the building will upgrade.
-    - When $BuildingUpgradeProgress < -BuildingUpgradeCost$, the building will be instantly abandoned, which means the **only cause of abandoned buildings is not enough rent is paid**.
-    - The building upkeep cost is calculated as: $Upkeep=BaseUpkeep*AreaSize*BuildingLevel^k$, where k equals 1.3 for residential, 2.0 for industrial and 2.1 for office and commercial. For residential properties, the upkeep of level 5 buildings is 8.1 times of level 1 ones. And for office and commercial properties, the figure is 29.3.
-    - The building upgrade cost is calculated as: $UpgradeCost=MaxRenterCount*BaseCost*2^{BuildingLevel*2}$. Leveling from 4 to 5 cost 64 times more than leveling from 1 to 2.
+    - When $$BuildingUpgradeProgress > BuildingUpgradeCost$$, the building will upgrade.
+    - When $$BuildingUpgradeProgress < -BuildingUpgradeCost$$, the building will be instantly abandoned, which means the **only cause of abandoned buildings is not enough rent is paid**.
+    - The building upkeep cost is calculated as: $$Upkeep=BaseUpkeep*AreaSize*BuildingLevel^k$$, where k equals 1.3 for residential, 2.0 for industrial and 2.1 for office and commercial. For residential properties, the upkeep of level 5 buildings is 8.1 times of level 1 ones. And for office and commercial properties, the figure is 29.3.
+    - The building upgrade cost is calculated as: $$UpgradeCost=MaxRenterCount*BaseCost*2^{BuildingLevel*2}$$. Leveling from 4 to 5 cost 64 times more than leveling from 1 to 2.
 
 ### Basic Modifications
 
-- Building upkeep mechanism is changed to: $Upkeep=\frac{BaseUpkeep*AreaSize*\sqrt{BuildingLevel+3}}{2}$. Now the upkeep of level 5 buildings is 1.414 times of level 1 ones.
-- Building upgrade cost is changed to: $UpgradeCost=MaxRenterCount*BaseCost*2^{BuildingLevel + 1}$。This modification only affects residential buildings, and for them, leveling from 4 to 5 cost only 8 times more than leveling from 1 to 2 now.
+- Building upkeep mechanism is changed to: $$Upkeep=\frac{BaseUpkeep*AreaSize*\sqrt{BuildingLevel+3}}{2}$$. Now the upkeep of level 5 buildings is 1.414 times of level 1 ones.
+- Building upgrade cost is changed to: $$UpgradeCost=MaxRenterCount*BaseCost*2^{BuildingLevel + 1}$$。This modification only affects residential buildings, and for them, leveling from 4 to 5 cost only 8 times more than leveling from 1 to 2 now.
 
 ### MaxRent Modifications
 
@@ -97,7 +97,7 @@ $$
 ### Other Modification
 
 - Garbage fee is set to 0.
-- When calculating shared LV, shared rent and shared Upkeep, $AreaSize=min(MaxRenterCount，AreaSize)$
+- When calculating shared LV, shared rent and shared Upkeep, $$AreaSize=min(MaxRenterCount，AreaSize)$$
 
 ## Disclaimer
 
@@ -113,7 +113,7 @@ $$
 
 ## Test (In Chinese)
 
-测试城市由四个主要测试片区组成，每个片区，之间都由公路隔开，防止地价蔓延**(公共交通不蔓延地价！**)。
+测试城市由四个主要测试片区组成，每个片区，之间都由公路隔开，防止地价蔓延(**公共交通不蔓延地价**)。
 
 一区由高密度住宅、高密度商业、中密度混合住宅组成，已经全部都是五级：
 
