@@ -1,3 +1,6 @@
+## 中文用户注意
+- 中文版的介绍位于Readme.pdf中，可以直接查看。
+
 ## Introduction
 
 - In the original game, your city will experience the following **death spiral**(s) once you run your city static (i.e. without building anything new) for enough time.
@@ -16,16 +19,6 @@
 - The effect of this mod is not instantly observable. **It takes time** (sometimes quite a lot) to adapt everything to the new mechanisms. 
 - When you installed this mod and load a save previously played without this mod, massive instant building upgrading may happen. This is normal as this mod alters the building upgrade mechanism.
 - More details about the modifications made by this mod is provided below.
-  
-- 本mod对地价机制，以及与地价机制有关的租金、建筑维护与升级机制进行了完整的改动，使得：
-    - 地价蔓延距离极大降低，
-    - 地价蔓延过程中将更偏袒觉得地价太高的租户，
-    - 居民超额收入/企业超额利润对地价-租金的影响极大削弱，
-    - 建筑维护费将不会随着建筑等级几何增长，
-    - 建筑升级所需进度随建筑等级增长的比例降低，
-    - 低密度住宅面积将按照1计算。
-    - 垃圾清运不再需要费用(不再对建筑升级产生负面影响)
-- 本mod不对地价、租金、建筑维护费等做出***任何数值限制。***如果你对游戏本体的地价机制有意见，又对强行设置地价、租金上限的做法表示嗤之以鼻，那么这个mod适合你。
 
 ## Requirements
 
