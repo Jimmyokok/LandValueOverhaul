@@ -49,10 +49,9 @@
     - For residential property renters, maxRent.x is determined by numerous factors, such as their life quality, household income and life expenses. maxRent.x of residential renters will not exceed 45% of their household income. **Meanwhile, their maxRent.y equals maxRent.x**,
     - For company renters, their maxRent.x equals their after-tax profit and maxRent.y equals their employee-maximized after-tax profit,
     - This mechanism is neither reasonable nor realistic. **The renter's maximum affordable rent do not and should not equals the maximum rent that he is willing to pay.** The following case shows how explosive profit/income leads to explosive LV, where a 4\*4 office building is *willing to pay a 3.39million rent* and pushes the LV to 10.08 million ($InGameLV = 240 * LV$)：
-      
 <img src="img/Untitled.png" alt="Untitled" style="zoom: 100%;" />
-        
-    - Meanwhile, the area of low density residential buildings are similar to medium and high density ones, while they only contain one household. Using ExtendedTooltips or the DeveloperMode, it can be clearly observed that **per-household rent** **of low densities are much higher** than medium and high densities on the same road edge.
+
+- Meanwhile, the area of low density residential buildings are similar to medium and high density ones, while they only contain one household. Using ExtendedTooltips or the DeveloperMode, it can be clearly observed that **per-household rent** **of low densities are much higher** than medium and high densities on the same road edge.
 - The building upgrade and abandon mechanism：
     - **Different from the game's description**, *all* rent paid by property renters contribute to the building upgrade progress, while **the building upkeep and the garbage fee is actually paid from the building upgrade progress**.
     - When $BuildingUpgradeProgress > BuildingUpgradeCost$, the building will upgrade.
