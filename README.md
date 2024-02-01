@@ -1,3 +1,7 @@
+> This mod may not be compatible with the recent game update 1.0.19f1. While this mod will be updated in a few days, please use it at your own risk during this period.
+
+> 本mod可能与最新游戏版本更新1.0.19f1并不兼容。本mod将在几天内更新，在这段时间内使用本mod风险自负。
+
 ## 中文用户注意
 - 中文版的介绍位于Readme.pdf中，可以直接查看。
 
