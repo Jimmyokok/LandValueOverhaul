@@ -1,6 +1,5 @@
-> This mod may not be compatible with the recent game update 1.0.19f1. While this mod will be updated in a few days, please use it at your own risk during this period.
-
-> 本mod可能与最新游戏版本更新1.0.19f1并不兼容。本mod将在几天内更新，在这段时间内使用本mod风险自负。
+> This mod has been updated to 1.4.0, compatible with the recent game update 1.0.19f1. Now the pollution affects the land value just the same as in the original game.
+> 本mod已经更新到1.4.0，兼容最新游戏版本更新1.0.19f1。现在污染能够如同原版游戏一样影响地价。
 
 ## 中文用户注意
 - 中文版的介绍位于Readme.pdf中，可以直接查看。
