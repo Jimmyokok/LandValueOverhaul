@@ -26,7 +26,7 @@
 
 ## Requirements
 
-- Game version 1.0.18f1.
+- Game version 1.0.19f1.
 - BepInEx 5
 
 ## Compatibility
