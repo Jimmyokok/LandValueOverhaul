@@ -28,7 +28,7 @@ using System.Reflection.Emit;
 
 namespace LandValueOverhaul
 {
-    [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, "1.3.0")]
+    [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, "1.4.0")]
     public class Plugin : BaseUnityPlugin
     {
         private void Awake()

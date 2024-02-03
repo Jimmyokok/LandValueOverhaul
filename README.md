@@ -1,10 +1,3 @@
-> This mod may not be compatible with the recent game update 1.0.19f1. While this mod will be updated in a few days, please use it at your own risk during this period.
-
-> 本mod可能与最新游戏版本更新1.0.19f1并不兼容。本mod将在几天内更新，在这段时间内使用本mod风险自负。
-
-## 中文用户注意
-- 中文版的介绍位于Readme.pdf中，可以直接查看。
-
 ## Introduction
 
 - In the original game, your city will experience the following **death spiral**(s) once you run your city static (i.e. without building anything new) for enough time.
@@ -22,7 +15,7 @@
   - Garbage fee is set to **0**.
 - The effect of this mod is not instantly observable. **It takes time** (sometimes quite a lot) to adapt everything to the new mechanisms. 
 - When you installed this mod and load a save previously played without this mod, massive instant building upgrading may happen. This is normal as this mod alters the building upgrade mechanism.
-- More details about the modifications made by this mod is provided below.
+- For more details about the modifications made by this mod, please check the github repository (https://github.com/Jimmyokok/LandValueOverhaul).
 
 ## Requirements
 
@@ -53,28 +46,32 @@
     - For residential property renters, maxRent.x is determined by numerous factors, such as their life quality, household income and life expenses. maxRent.x of residential renters will not exceed 45% of their household income. **Meanwhile, their maxRent.y equals maxRent.x**,
     - For company renters, their maxRent.x equals their after-tax profit and maxRent.y equals their employee-maximized after-tax profit,
     - This mechanism is neither reasonable nor realistic. **The renter's maximum affordable rent do not and should not equals the maximum rent that he is willing to pay.** The following case shows how explosive profit/income leads to explosive LV, where a 4\*4 office building is *willing to pay a 3.39million rent* and pushes the LV to 10.08 million ($InGameLV = 240 * LV$)：
-<img src="img/Untitled.png" alt="Untitled" style="zoom: 100%;" />
-
-- Meanwhile, the area of low density residential buildings are similar to medium and high density ones, while they only contain one household. Using ExtendedTooltips or the DeveloperMode, it can be clearly observed that **per-household rent** **of low densities are much higher** than medium and high densities on the same road edge.
+      
+        ![Untitled](img/Untitled.png)
+        
+    - Meanwhile, the area of low density residential buildings are similar to medium and high density ones, while they only contain one household. Using ExtendedTooltips or the DeveloperMode, it can be clearly observed that **per-household rent** **of low densities are much higher** than medium and high densities on the same road edge.
 - The building upgrade and abandon mechanism：
     - **Different from the game's description**, *all* rent paid by property renters contribute to the building upgrade progress, while **the building upkeep and the garbage fee is actually paid from the building upgrade progress**.
     - When $BuildingUpgradeProgress > BuildingUpgradeCost$, the building will upgrade.
     - When $BuildingUpgradeProgress < -BuildingUpgradeCost$, the building will be instantly abandoned, which means the **only cause of abandoned buildings is not enough rent is paid**.
-    - The building upkeep cost is calculated as: $Upkeep=BaseUpkeep * AreaSize * BuildingLevel^k$, where k equals 1.3 for residential, 2.0 for industrial and 2.1 for office and commercial. For residential properties, the upkeep of level 5 buildings is 8.1 times of level 1 ones. And for office and commercial properties, the figure is 29.3.
-    - The building upgrade cost is calculated as: $UpgradeCost=MaxRenterCount * BaseCost * 2^{BuildingLevel*2}$. Leveling from 4 to 5 cost 64 times more than leveling from 1 to 2.
+    - The building upkeep cost is calculated as: $Upkeep=BaseUpkeep*AreaSize*BuildingLevel^k$, where k equals 1.3 for residential, 2.0 for industrial and 2.1 for office and commercial. For residential properties, the upkeep of level 5 buildings is 8.1 times of level 1 ones. And for office and commercial properties, the figure is 29.3.
+    - The building upgrade cost is calculated as: $UpgradeCost=MaxRenterCount*BaseCost*2^{BuildingLevel*2}$. Leveling from 4 to 5 cost 64 times more than leveling from 1 to 2.
 
 ### Basic Modifications
 
-- Building upkeep mechanism is changed to: $Upkeep=\frac{BaseUpkeep * AreaSize * \sqrt{BuildingLevel+3}}{2}$. Now the upkeep of level 5 buildings is 1.414 times of level 1 ones.
-- Building upgrade cost is changed to: $UpgradeCost=MaxRenterCount * BaseCost * 2^{BuildingLevel + 1}$。This modification only affects residential buildings, and for them, leveling from 4 to 5 cost only 8 times more than leveling from 1 to 2 now.
+- Building upkeep mechanism is changed to: $Upkeep=\frac{BaseUpkeep*AreaSize*\sqrt{BuildingLevel+3}}{2}$. Now the upkeep of level 5 buildings is 1.414 times of level 1 ones.
+- Building upgrade cost is changed to: $UpgradeCost=MaxRenterCount*BaseCost*2^{BuildingLevel + 1}$。This modification only affects residential buildings, and for them, leveling from 4 to 5 cost only 8 times more than leveling from 1 to 2 now.
 
 ### MaxRent Modifications
+
 $$
-\displaylines{
-maxRent.x(Modified)= maxRent.x, maxRent.x<SharedUpkeep\\
-maxRent.x(Modified)=(1+log_{10}{\frac{maxRent.x}{SharedUpkeep}})*SharedUpkeep, maxRent.x >= SharedUpkeep.
-}
+maxRent.x(Modified)=
+\left\{\begin{matrix}
+maxRent.x, maxRent.x<SharedUpkeep\\
+(1+log_{10}{\frac{maxRent.x}{SharedUpkeep}})*SharedUpkeep, maxRent.x\geq SharedUpkeep
+\end{matrix}\right.
 $$
+
 - Explanation: The obligation of a renter includes paying his shared building upkeep. And a richer renter is willing to pay more, but only slightly more (using log transformation to simulate). In this case, a company making 2 million profit every day is willing to pay a rent of ~50000 (instead of ~1.9 million), as much as 1.5 times the combined rent of all renters in a high density level 5 residential building.
 
 ### LV Mechanism Modification
@@ -82,24 +79,25 @@ $$
 - Distance fade factor is now 200m instead of 2000m.
 
 - LV spreading will favor renters that feel the rent is too high. This mod implements a score-based update mechanism. It first calculates the rent payment willingness of individual renters according to *LV and the maximum willing-to-pay rent (maxRent.x)*:
-
-$$
-\displaylines{Rent =SharedLV+	SharedUpkeep\\
-willingness=log_{10}{\frac{maxRent.x}{Rent}}.}
-$$
+  $$
+  Rent =SharedLV+	SharedUpkeep\\
+  willingness=log_{10}{\frac{maxRent.x}{Rent}}.
+  $$
 
 - Then for every individual renter, a LV score is calculated. If the summed scores of all renters > 0, the LV falls and vice versa：
 
 $$
-\displaylines{
-score = Sigmoid(willingness) - \frac{1}{2}, willingness>0\\
-score = (1-willingness)*(Sigmoid(willingness) - \frac{1}{2}), willingness\leq 0.}
+score=
+\left\{\begin{matrix}
+Sigmoid(willingness) - \frac{1}{2}, willingess>0\\
+(1-willingness)*(Sigmoid(willingness) - \frac{1}{2}), willingess\leq 0
+\end{matrix}\right.
 $$
 
 ### Other Modification
 
 - Garbage fee is set to 0.
-- When calculating shared LV, shared rent and shared Upkeep, $AreaSize=min(MaxRenterCount，AreaSize)$.
+- When calculating shared LV, shared rent and shared Upkeep, $AreaSize=min(MaxRenterCount，AreaSize)$
 
 ## Disclaimer
 
@@ -115,7 +113,7 @@ $$
 
 ## Test (In Chinese)
 
-测试城市由四个主要测试片区组成，每个片区，之间都由公路隔开，防止地价蔓延(**公共交通不蔓延地价**)。
+测试城市由四个主要测试片区组成，每个片区，之间都由公路隔开，防止地价蔓延**(公共交通不蔓延地价！**)。
 
 一区由高密度住宅、高密度商业、中密度混合住宅组成，已经全部都是五级：
 

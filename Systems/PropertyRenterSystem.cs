@@ -263,6 +263,7 @@ namespace LandValueOverhaul.Systems
             this.__TypeHandle.__Game_Economy_Resources_RW_BufferLookup.Update(ref base.CheckedStateRef);
             this.__TypeHandle.__Game_Buildings_PropertyRenter_RO_ComponentLookup.Update(ref base.CheckedStateRef);
             this.__TypeHandle.__Game_Prefabs_ZoneData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
+            this.__TypeHandle.__Game_Companies_Profitability_RO_ComponentLookup.Update(ref base.CheckedStateRef);
             this.__TypeHandle.__Game_Prefabs_SpawnableBuildingData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
             this.__TypeHandle.__Game_Prefabs_PrefabRef_RO_ComponentTypeHandle.Update(ref base.CheckedStateRef);
             this.__TypeHandle.__Game_Buildings_BuildingCondition_RW_ComponentTypeHandle.Update(ref base.CheckedStateRef);
@@ -277,6 +278,7 @@ namespace LandValueOverhaul.Systems
             jobData2.m_PrefabType = this.__TypeHandle.__Game_Prefabs_PrefabRef_RO_ComponentTypeHandle;
             jobData2.m_UpdateFrameType = base.GetSharedComponentTypeHandle<UpdateFrame>();
             jobData2.m_SpawnableBuildingData = this.__TypeHandle.__Game_Prefabs_SpawnableBuildingData_RO_ComponentLookup;
+            jobData2.m_Profitabilities = this.__TypeHandle.__Game_Companies_Profitability_RO_ComponentLookup;
             jobData2.m_ZoneData = this.__TypeHandle.__Game_Prefabs_ZoneData_RO_ComponentLookup;
             jobData2.m_PropertyRenters = this.__TypeHandle.__Game_Buildings_PropertyRenter_RO_ComponentLookup;
             jobData2.m_Resources = this.__TypeHandle.__Game_Economy_Resources_RW_BufferLookup;
@@ -561,7 +563,7 @@ namespace LandValueOverhaul.Systems
         [BurstCompile]
         private struct LeveldownJob : IJob
         {
-            // Token: 0x060055B8 RID: 21944 RVA: 0x003B3BEC File Offset: 0x003B1DEC
+            // Token: 0x060056C4 RID: 22212 RVA: 0x0034E9B0 File Offset: 0x0034CBB0
             public void Execute()
             {
                 Entity entity;
@@ -1237,6 +1239,10 @@ namespace LandValueOverhaul.Systems
                                     {
                                         buildingCondition.m_Condition = levelingCost;
                                     }
+                                    else if (areaType == AreaType.Industrial && this.m_Profitabilities.HasComponent(renter))
+                                    {
+                                        buildingCondition.m_Condition += (int)((float)num3 * (1f + (float)(math.max((int)(spawnableBuildingData.m_Level - 1), 0) * (int)this.m_Profitabilities[renter].m_Profitability) / 255f));
+                                    }
                                     else
                                     {
                                         buildingCondition.m_Condition += num3;
@@ -1311,6 +1317,9 @@ namespace LandValueOverhaul.Systems
             // Token: 0x040090D0 RID: 37072
             [ReadOnly]
             public ComponentTypeHandle<PrefabRef> m_PrefabType;
+
+            [ReadOnly]
+            public ComponentLookup<Profitability> m_Profitabilities;
 
             // Token: 0x040090D1 RID: 37073
             [ReadOnly]
@@ -1433,6 +1442,7 @@ namespace LandValueOverhaul.Systems
                 this.__Game_Buildings_BuildingCondition_RW_ComponentTypeHandle = state.GetComponentTypeHandle<BuildingCondition>(false);
                 this.__Game_Prefabs_PrefabRef_RO_ComponentTypeHandle = state.GetComponentTypeHandle<PrefabRef>(true);
                 this.__Game_Prefabs_SpawnableBuildingData_RO_ComponentLookup = state.GetComponentLookup<SpawnableBuildingData>(true);
+                this.__Game_Companies_Profitability_RO_ComponentLookup = state.GetComponentLookup<Profitability>(true);
                 this.__Game_Prefabs_ZoneData_RO_ComponentLookup = state.GetComponentLookup<ZoneData>(true);
                 this.__Game_Economy_Resources_RW_BufferLookup = state.GetBufferLookup<Game.Economy.Resources>(false);
                 this.__Game_Prefabs_BuildingPropertyData_RO_ComponentLookup = state.GetComponentLookup<BuildingPropertyData>(true);
@@ -1491,6 +1501,9 @@ namespace LandValueOverhaul.Systems
             // Token: 0x040090EC RID: 37100
             [ReadOnly]
             public ComponentLookup<SpawnableBuildingData> __Game_Prefabs_SpawnableBuildingData_RO_ComponentLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Profitability> __Game_Companies_Profitability_RO_ComponentLookup;
 
             // Token: 0x040090ED RID: 37101
             [ReadOnly]

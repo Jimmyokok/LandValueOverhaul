@@ -320,7 +320,7 @@ namespace LandValueOverhaul.Systems
                 num = (float)buildingProperties.CountProperties();
             }
             @float /= num;
-            return @float;
+            return Mathf.Max(1f, @float);
         }
 
         // Token: 0x060055CA RID: 21962 RVA: 0x003B5E58 File Offset: 0x003B4058

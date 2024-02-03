@@ -19,36 +19,31 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Scripting;
 using BepInEx.Logging;
-using Game.UI.Tooltip;
+
 
 namespace LandValueOverhaul.Systems
 {
-    // Token: 0x02001338 RID: 4920
+    // Token: 0x0200136E RID: 4974
     [CompilerGenerated]
     public class LandValueSystem_Custom : GameSystemBase
     {
-        // Token: 0x06005570 RID: 21872 RVA: 0x00088ED7 File Offset: 0x000870D7
+        // Token: 0x0600567C RID: 22140 RVA: 0x002A4D59 File Offset: 0x002A2F59
         public override int GetUpdateInterval(SystemUpdatePhase phase)
         {
             return 16;
         }
 
-        // Token: 0x06005571 RID: 21873 RVA: 0x003B103C File Offset: 0x003AF23C
+        // Token: 0x0600567D RID: 22141 RVA: 0x0034BA74 File Offset: 0x00349C74
         [Preserve]
         protected override void OnCreate()
         {
             base.OnCreate();
-            logger.LogInfo("Land value update manipulated!");
-            /*
-            UpdateFrequencyFactor = Plugin.LandValueUpdateFrenquencyFactor.Value;
-            UpdateFrequencyFactor = UpdateFrequencyFactor > 0 ? UpdateFrequencyFactor : 0;
-            UpdateFrequencyFactor = UpdateFrequencyFactor < 16 ? UpdateFrequencyFactor : 16;
-            LandValueDecreaseThreshold = Plugin.LandValueDecreaseThreshold.Value;
-            LandValueDecreaseThreshold = LandValueDecreaseThreshold > 0 ? LandValueDecreaseThreshold : 0;
-            LandValueDecreaseThreshold = LandValueDecreaseThreshold < 1 ? LandValueDecreaseThreshold : 1;
-            DistanceFadeFactor = Plugin.DistanceFadeFactor.Value;
-            DistanceFadeFactor = DistanceFadeFactor > 0 ? DistanceFadeFactor : 0;
-            */
+            logger.LogInfo("Land value update manipulated!");//Add logger info
+            this.m_GroundPollutionSystem = base.World.GetOrCreateSystemManaged<GroundPollutionSystem>();
+            this.m_PollutionParameterQuery = base.GetEntityQuery(new ComponentType[]
+            {
+                ComponentType.ReadOnly<PollutionParameterData>()
+            });
             this.m_EdgeGroup = base.GetEntityQuery(new EntityQueryDesc[]
             {
                 new EntityQueryDesc
@@ -93,7 +88,7 @@ namespace LandValueOverhaul.Systems
             });
         }
 
-        // Token: 0x06005572 RID: 21874 RVA: 0x003B117C File Offset: 0x003AF37C
+        // Token: 0x0600567E RID: 22142 RVA: 0x0034BBE0 File Offset: 0x00349DE0
         [Preserve]
         protected override void OnUpdate()
         {
@@ -114,6 +109,7 @@ namespace LandValueOverhaul.Systems
                 this.__TypeHandle.__Game_Buildings_PropertyRenter_RO_ComponentLookup.Update(ref base.CheckedStateRef);
                 this.__TypeHandle.__Game_Prefabs_PrefabRef_RO_ComponentLookup.Update(ref base.CheckedStateRef);
                 this.__TypeHandle.__Game_Net_LandValue_RW_ComponentLookup.Update(ref base.CheckedStateRef);
+                this.__TypeHandle.__Game_Objects_Transform_RO_ComponentLookup.Update(ref base.CheckedStateRef);
                 this.__TypeHandle.__Game_Prefabs_BuildingData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
                 this.__TypeHandle.__Game_Buildings_ConnectedBuilding_RO_BufferTypeHandle.Update(ref base.CheckedStateRef);
                 this.__TypeHandle.__Game_Net_Curve_RO_ComponentTypeHandle.Update(ref base.CheckedStateRef);
@@ -125,6 +121,7 @@ namespace LandValueOverhaul.Systems
                 jobData.m_CurveType = this.__TypeHandle.__Game_Net_Curve_RO_ComponentTypeHandle;
                 jobData.m_ConnectedBuildingType = this.__TypeHandle.__Game_Buildings_ConnectedBuilding_RO_BufferTypeHandle;
                 jobData.m_BuildingDatas = this.__TypeHandle.__Game_Prefabs_BuildingData_RO_ComponentLookup;
+                jobData.m_Transforms = this.__TypeHandle.__Game_Objects_Transform_RO_ComponentLookup;
                 jobData.m_LandValues = this.__TypeHandle.__Game_Net_LandValue_RW_ComponentLookup;
                 jobData.m_Prefabs = this.__TypeHandle.__Game_Prefabs_PrefabRef_RO_ComponentLookup;
                 jobData.m_PropertyRenters = this.__TypeHandle.__Game_Buildings_PropertyRenter_RO_ComponentLookup;
@@ -139,7 +136,11 @@ namespace LandValueOverhaul.Systems
                 jobData.m_SubAreas = this.__TypeHandle.__Game_Areas_SubArea_RO_BufferLookup;
                 jobData.m_Lots = this.__TypeHandle.__Game_Areas_Lot_RO_ComponentLookup;
                 jobData.m_Geometries = this.__TypeHandle.__Game_Areas_Geometry_RO_ComponentLookup;
-                jobHandle = jobData.ScheduleParallel(this.m_EdgeGroup, base.Dependency);
+                JobHandle job;
+                jobData.m_PollutionMap = this.m_GroundPollutionSystem.GetMap(true, out job);
+                jobData.m_PollutionParameters = this.m_PollutionParameterQuery.GetSingleton<PollutionParameterData>();
+                jobHandle = jobData.ScheduleParallel(this.m_EdgeGroup, JobHandle.CombineDependencies(base.Dependency, job));
+                this.m_GroundPollutionSystem.AddReader(jobHandle);
             }
             if (!this.m_NodeGroup.IsEmptyIgnoreFilter)
             {
@@ -159,25 +160,19 @@ namespace LandValueOverhaul.Systems
             base.Dependency = jobHandle;
         }
 
-        // Token: 0x06005573 RID: 21875 RVA: 0x0008E3E5 File Offset: 0x0008C5E5
+        // Token: 0x0600567F RID: 22143 RVA: 0x0034C06D File Offset: 0x0034A26D
         private static float GetDistanceFade(float distance)
         {
-            /*
-            if(DistanceFadeFactor == 0)
-            {
-                return 0f;
-            }
-            */
-            return math.saturate(1f - distance / (float)/*DistanceFadeFactor*/ 200);
+            return math.saturate(1f - distance / 200f);//2000 -> 200
         }
 
-        // Token: 0x06005574 RID: 21876 RVA: 0x0005E08F File Offset: 0x0005C28F
+        // Token: 0x06005680 RID: 22144 RVA: 0x00002E1D File Offset: 0x0000101D
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void __AssignQueries(ref SystemState state)
         {
         }
 
-        // Token: 0x06005575 RID: 21877 RVA: 0x0008E3F9 File Offset: 0x0008C5F9
+        // Token: 0x06005681 RID: 22145 RVA: 0x0034C081 File Offset: 0x0034A281
         protected override void OnCreateForCompiler()
         {
             base.OnCreateForCompiler();
@@ -185,34 +180,33 @@ namespace LandValueOverhaul.Systems
             this.__TypeHandle.__AssignHandles(ref base.CheckedStateRef);
         }
 
-        // Token: 0x06005576 RID: 21878 RVA: 0x0005E948 File Offset: 0x0005CB48
+        // Token: 0x06005682 RID: 22146 RVA: 0x00006953 File Offset: 0x00004B53
         [Preserve]
         public LandValueSystem_Custom()
         {
         }
 
-        // Token: 0x04008FF7 RID: 36855
+        // Token: 0x040090F3 RID: 37107
+        private GroundPollutionSystem m_GroundPollutionSystem;
+
+        // Token: 0x040090F4 RID: 37108
         private EntityQuery m_EdgeGroup;
 
-        // Token: 0x04008FF8 RID: 36856
+        // Token: 0x040090F5 RID: 37109
         private EntityQuery m_NodeGroup;
 
-        /*
-        private static float UpdateFrequencyFactor;
-        private static float LandValueDecreaseThreshold;
-        private static int DistanceFadeFactor;
-        */
-        private static ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource(MyPluginInfo.PLUGIN_NAME);
+        // Token: 0x040090F6 RID: 37110
+        private EntityQuery m_PollutionParameterQuery;
 
-        // Token: 0x04008FF9 RID: 36857
+        private static ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource(MyPluginInfo.PLUGIN_NAME);
+        // Token: 0x040090F7 RID: 37111
         private LandValueSystem_Custom.TypeHandle __TypeHandle;
 
-        // Token: 0x02001339 RID: 4921
+        // Token: 0x0200136F RID: 4975
         [BurstCompile]
-
         private struct EdgeUpdateJob : IJobChunk
         {
-            // Token: 0x06005577 RID: 21879 RVA: 0x003B15A8 File Offset: 0x003AF7A8
+            // Token: 0x06005683 RID: 22147 RVA: 0x0034C0A8 File Offset: 0x0034A2A8
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 NativeArray<Entity> nativeArray = chunk.GetNativeArray(this.m_EntityType);
@@ -228,6 +222,7 @@ namespace LandValueOverhaul.Systems
                     int num = 0;
                     float num2 = 0f;
                     float num3 = 0f;
+                    float pollution_factor = 0f;
                     DynamicBuffer<ConnectedBuilding> dynamicBuffer = bufferAccessor[i];
                     for (int j = 0; j < dynamicBuffer.Length; j++)
                     {
@@ -245,7 +240,7 @@ namespace LandValueOverhaul.Systems
                                     int num4 = buildingPropertyData.CountProperties();
                                     bool flag = buildingPropertyData.m_ResidentialProperties > 0 && (buildingPropertyData.m_AllowedSold != Resource.NoResource || buildingPropertyData.m_AllowedManufactured > Resource.NoResource);
                                     int num5 = buildingData.m_LotSize.x * buildingData.m_LotSize.y;
-                                    if(buildingPropertyData.m_ResidentialProperties > 0)
+                                    if (buildingPropertyData.m_ResidentialProperties > 0)
                                     {
                                         num5 = math.min(num5, buildingPropertyData.m_ResidentialProperties);
                                     }
@@ -280,7 +275,7 @@ namespace LandValueOverhaul.Systems
                                                 {
                                                     desired_rent_scaled = (float)propertyRenter.m_MaxRent;
                                                     current_rent_scaled = num6 + num7;
-                                                    
+
                                                 }
                                                 float p = desired_rent_scaled / current_rent_scaled;
                                                 float score;
@@ -299,6 +294,10 @@ namespace LandValueOverhaul.Systems
                                         num += buildingData.m_LotSize.x * buildingData.m_LotSize.y; ;
                                         int num8 = num4 - dynamicBuffer2.Length;
                                         num3 += num8;
+                                    }
+                                    if (this.m_Transforms.HasComponent(building))
+                                    {
+                                        pollution_factor = (float)GroundPollutionSystem.GetPollution(this.m_Transforms[building].m_Position, this.m_PollutionMap).m_Pollution / (float)this.m_PollutionParameters.m_GroundPollutionLandValueDivisor;
                                     }
                                 }
                             }
@@ -319,17 +318,25 @@ namespace LandValueOverhaul.Systems
                     float y2 = 0f;
                     if (num3 > 0)
                     {
-                        y2 = 0.1f * Mathf.Min(1f, Mathf.Max(-1f, -2 * num2 / num3)) - 1 / (float) 2400;
+                        y2 = 0.1f * Mathf.Min(1f, Mathf.Max(-1f, -2 * num2 / num3)) - 1 / (float)2400;
                     }
                     else
                     {
                         landValue.m_LandValue = 0f;
+                    }
+                    if (pollution_factor > 0f)
+                    {
+                        pollution_factor = math.lerp(0f, 2f, pollution_factor / 50f);
                     }
                     landValue.m_Weight = math.max(1f, math.lerp(landValue.m_Weight, (float)num, 0.1f));
                     float s = num10 / (99f * landValue.m_Weight + num10);
                     if (landValue.m_LandValue > 0)
                     {
                         landValue.m_LandValue = math.lerp(landValue.m_LandValue, y, s);
+                    }
+                    if (landValue.m_LandValue > 30f)
+                    {
+                        y2 -= pollution_factor * 0.2f;
                     }
                     landValue.m_LandValue += math.min(1f, math.max(-1f, y2));
                     landValue.m_LandValue = math.max(landValue.m_LandValue, 0f);
@@ -338,96 +345,106 @@ namespace LandValueOverhaul.Systems
                 }
             }
 
-            // Token: 0x06005578 RID: 21880 RVA: 0x0008E41E File Offset: 0x0008C61E
+            // Token: 0x06005684 RID: 22148 RVA: 0x0034C672 File Offset: 0x0034A872
             void IJobChunk.Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 this.Execute(chunk, unfilteredChunkIndex, useEnabledMask, chunkEnabledMask);
             }
 
-            // Token: 0x04008FFA RID: 36858
+            // Token: 0x040090F8 RID: 37112
             [ReadOnly]
             public EntityTypeHandle m_EntityType;
 
-            private static ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource(MyPluginInfo.PLUGIN_NAME);
-
-            // Token: 0x04008FFB RID: 36859
+            // Token: 0x040090F9 RID: 37113
             [ReadOnly]
             public BufferTypeHandle<ConnectedBuilding> m_ConnectedBuildingType;
 
-            // Token: 0x04008FFC RID: 36860
+            // Token: 0x040090FA RID: 37114
             [ReadOnly]
             public ComponentTypeHandle<Edge> m_EdgeType;
 
-            // Token: 0x04008FFD RID: 36861
+            // Token: 0x040090FB RID: 37115
             [ReadOnly]
             public ComponentTypeHandle<Curve> m_CurveType;
 
-            // Token: 0x04008FFE RID: 36862
+            // Token: 0x040090FC RID: 37116
             [NativeDisableParallelForRestriction]
             public ComponentLookup<LandValue> m_LandValues;
 
-            // Token: 0x04008FFF RID: 36863
+            // Token: 0x040090FD RID: 37117
             [ReadOnly]
             public BufferLookup<Renter> m_RenterBuffers;
 
-            // Token: 0x04009000 RID: 36864
+            // Token: 0x040090FE RID: 37118
+            [ReadOnly]
+            public ComponentLookup<Game.Objects.Transform> m_Transforms;
+
+            // Token: 0x040090FF RID: 37119
             [ReadOnly]
             public ComponentLookup<PropertyRenter> m_PropertyRenters;
 
-            // Token: 0x04009001 RID: 36865
+            // Token: 0x04009100 RID: 37120
             [ReadOnly]
             public ComponentLookup<PrefabRef> m_Prefabs;
 
-            // Token: 0x04009002 RID: 36866
+            // Token: 0x04009101 RID: 37121
             [ReadOnly]
             public ComponentLookup<BuildingData> m_BuildingDatas;
 
-            // Token: 0x04009003 RID: 36867
+            // Token: 0x04009102 RID: 37122
             [ReadOnly]
             public ComponentLookup<Abandoned> m_Abandoneds;
 
-            // Token: 0x04009004 RID: 36868
+            // Token: 0x04009103 RID: 37123
             [ReadOnly]
             public ComponentLookup<Destroyed> m_Destroyeds;
 
-            // Token: 0x04009005 RID: 36869
+            // Token: 0x04009104 RID: 37124
             [ReadOnly]
             public ComponentLookup<ConsumptionData> m_ConsumptionDatas;
 
-            // Token: 0x04009006 RID: 36870
+            // Token: 0x04009105 RID: 37125
             [ReadOnly]
             public ComponentLookup<BuildingPropertyData> m_PropertyDatas;
 
-            // Token: 0x04009007 RID: 36871
+            // Token: 0x04009106 RID: 37126
             [ReadOnly]
             public ComponentLookup<Household> m_Households;
 
-            // Token: 0x04009008 RID: 36872
+            // Token: 0x04009107 RID: 37127
             [ReadOnly]
             public ComponentLookup<Placeholder> m_Placeholders;
 
-            // Token: 0x04009009 RID: 36873
+            // Token: 0x04009108 RID: 37128
             [ReadOnly]
             public ComponentLookup<Attached> m_Attached;
 
-            // Token: 0x0400900A RID: 36874
+            // Token: 0x04009109 RID: 37129
             [ReadOnly]
             public BufferLookup<Game.Areas.SubArea> m_SubAreas;
 
-            // Token: 0x0400900B RID: 36875
+            // Token: 0x0400910A RID: 37130
             [ReadOnly]
             public ComponentLookup<Game.Areas.Lot> m_Lots;
 
-            // Token: 0x0400900C RID: 36876
+            // Token: 0x0400910B RID: 37131
             [ReadOnly]
             public ComponentLookup<Geometry> m_Geometries;
+
+            // Token: 0x0400910C RID: 37132
+            [ReadOnly]
+            public NativeArray<GroundPollution> m_PollutionMap;
+
+            // Token: 0x0400910D RID: 37133
+            [ReadOnly]
+            public PollutionParameterData m_PollutionParameters;
         }
 
-        // Token: 0x0200133A RID: 4922
+        // Token: 0x02001370 RID: 4976
         [BurstCompile]
         private struct NodeUpdateJob : IJobChunk
         {
-            // Token: 0x06005579 RID: 21881 RVA: 0x003B1AF0 File Offset: 0x003AFCF0
+            // Token: 0x06005685 RID: 22149 RVA: 0x0034C680 File Offset: 0x0034A880
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 NativeArray<Entity> nativeArray = chunk.GetNativeArray(this.m_EntityType);
@@ -468,38 +485,38 @@ namespace LandValueOverhaul.Systems
                     }
                 }
             }
-            
-            // Token: 0x0600557A RID: 21882 RVA: 0x0008E42B File Offset: 0x0008C62B
+
+            // Token: 0x06005686 RID: 22150 RVA: 0x0034C806 File Offset: 0x0034AA06
             void IJobChunk.Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 this.Execute(chunk, unfilteredChunkIndex, useEnabledMask, chunkEnabledMask);
             }
 
-            // Token: 0x0400900D RID: 36877
+            // Token: 0x0400910E RID: 37134
             [ReadOnly]
             public EntityTypeHandle m_EntityType;
 
-            // Token: 0x0400900E RID: 36878
+            // Token: 0x0400910F RID: 37135
             [ReadOnly]
             public ComponentTypeHandle<Game.Net.Node> m_NodeType;
 
-            // Token: 0x0400900F RID: 36879
+            // Token: 0x04009110 RID: 37136
             [ReadOnly]
             public BufferTypeHandle<ConnectedEdge> m_ConnectedEdgeType;
 
-            // Token: 0x04009010 RID: 36880
+            // Token: 0x04009111 RID: 37137
             [NativeDisableParallelForRestriction]
             public ComponentLookup<LandValue> m_LandValues;
 
-            // Token: 0x04009011 RID: 36881
+            // Token: 0x04009112 RID: 37138
             [ReadOnly]
             public ComponentLookup<Curve> m_Curves;
         }
 
-        // Token: 0x0200133B RID: 4923
+        // Token: 0x02001371 RID: 4977
         private struct TypeHandle
         {
-            // Token: 0x0600557B RID: 21883 RVA: 0x003B1C78 File Offset: 0x003AFE78
+            // Token: 0x06005687 RID: 22151 RVA: 0x0034C814 File Offset: 0x0034AA14
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void __AssignHandles(ref SystemState state)
             {
@@ -508,6 +525,7 @@ namespace LandValueOverhaul.Systems
                 this.__Game_Net_Curve_RO_ComponentTypeHandle = state.GetComponentTypeHandle<Curve>(true);
                 this.__Game_Buildings_ConnectedBuilding_RO_BufferTypeHandle = state.GetBufferTypeHandle<ConnectedBuilding>(true);
                 this.__Game_Prefabs_BuildingData_RO_ComponentLookup = state.GetComponentLookup<BuildingData>(true);
+                this.__Game_Objects_Transform_RO_ComponentLookup = state.GetComponentLookup<Game.Objects.Transform>(true);
                 this.__Game_Net_LandValue_RW_ComponentLookup = state.GetComponentLookup<LandValue>(false);
                 this.__Game_Prefabs_PrefabRef_RO_ComponentLookup = state.GetComponentLookup<PrefabRef>(true);
                 this.__Game_Buildings_PropertyRenter_RO_ComponentLookup = state.GetComponentLookup<PropertyRenter>(true);
@@ -527,90 +545,94 @@ namespace LandValueOverhaul.Systems
                 this.__Game_Net_Curve_RO_ComponentLookup = state.GetComponentLookup<Curve>(true);
             }
 
-            // Token: 0x04009012 RID: 36882
+            // Token: 0x04009113 RID: 37139
             [ReadOnly]
             public EntityTypeHandle __Unity_Entities_Entity_TypeHandle;
 
-            // Token: 0x04009013 RID: 36883
+            // Token: 0x04009114 RID: 37140
             [ReadOnly]
             public ComponentTypeHandle<Edge> __Game_Net_Edge_RO_ComponentTypeHandle;
 
-            // Token: 0x04009014 RID: 36884
+            // Token: 0x04009115 RID: 37141
             [ReadOnly]
             public ComponentTypeHandle<Curve> __Game_Net_Curve_RO_ComponentTypeHandle;
 
-            // Token: 0x04009015 RID: 36885
+            // Token: 0x04009116 RID: 37142
             [ReadOnly]
             public BufferTypeHandle<ConnectedBuilding> __Game_Buildings_ConnectedBuilding_RO_BufferTypeHandle;
 
-            // Token: 0x04009016 RID: 36886
+            // Token: 0x04009117 RID: 37143
             [ReadOnly]
             public ComponentLookup<BuildingData> __Game_Prefabs_BuildingData_RO_ComponentLookup;
 
-            // Token: 0x04009017 RID: 36887
+            // Token: 0x04009118 RID: 37144
+            [ReadOnly]
+            public ComponentLookup<Game.Objects.Transform> __Game_Objects_Transform_RO_ComponentLookup;
+
+            // Token: 0x04009119 RID: 37145
             public ComponentLookup<LandValue> __Game_Net_LandValue_RW_ComponentLookup;
 
-            // Token: 0x04009018 RID: 36888
+            // Token: 0x0400911A RID: 37146
             [ReadOnly]
             public ComponentLookup<PrefabRef> __Game_Prefabs_PrefabRef_RO_ComponentLookup;
 
-            // Token: 0x04009019 RID: 36889
+            // Token: 0x0400911B RID: 37147
             [ReadOnly]
             public ComponentLookup<PropertyRenter> __Game_Buildings_PropertyRenter_RO_ComponentLookup;
 
-            // Token: 0x0400901A RID: 36890
+            // Token: 0x0400911C RID: 37148
             [ReadOnly]
             public BufferLookup<Renter> __Game_Buildings_Renter_RO_BufferLookup;
 
-            // Token: 0x0400901B RID: 36891
+            // Token: 0x0400911D RID: 37149
             [ReadOnly]
             public ComponentLookup<Abandoned> __Game_Buildings_Abandoned_RO_ComponentLookup;
 
-            // Token: 0x0400901C RID: 36892
+            // Token: 0x0400911E RID: 37150
             [ReadOnly]
             public ComponentLookup<Destroyed> __Game_Common_Destroyed_RO_ComponentLookup;
 
-            // Token: 0x0400901D RID: 36893
+            // Token: 0x0400911F RID: 37151
             [ReadOnly]
             public ComponentLookup<ConsumptionData> __Game_Prefabs_ConsumptionData_RO_ComponentLookup;
 
-            // Token: 0x0400901E RID: 36894
+            // Token: 0x04009120 RID: 37152
             [ReadOnly]
             public ComponentLookup<BuildingPropertyData> __Game_Prefabs_BuildingPropertyData_RO_ComponentLookup;
 
-            // Token: 0x0400901F RID: 36895
+            // Token: 0x04009121 RID: 37153
             [ReadOnly]
             public ComponentLookup<Household> __Game_Citizens_Household_RO_ComponentLookup;
 
-            // Token: 0x04009020 RID: 36896
+            // Token: 0x04009122 RID: 37154
             [ReadOnly]
             public ComponentLookup<Placeholder> __Game_Objects_Placeholder_RO_ComponentLookup;
 
-            // Token: 0x04009021 RID: 36897
+            // Token: 0x04009123 RID: 37155
             [ReadOnly]
             public ComponentLookup<Attached> __Game_Objects_Attached_RO_ComponentLookup;
 
-            // Token: 0x04009022 RID: 36898
+            // Token: 0x04009124 RID: 37156
             [ReadOnly]
             public BufferLookup<Game.Areas.SubArea> __Game_Areas_SubArea_RO_BufferLookup;
 
-            // Token: 0x04009023 RID: 36899
+            // Token: 0x04009125 RID: 37157
             [ReadOnly]
             public ComponentLookup<Game.Areas.Lot> __Game_Areas_Lot_RO_ComponentLookup;
 
-            // Token: 0x04009024 RID: 36900
+            // Token: 0x04009126 RID: 37158
             [ReadOnly]
             public ComponentLookup<Geometry> __Game_Areas_Geometry_RO_ComponentLookup;
 
-            // Token: 0x04009025 RID: 36901
+            // Token: 0x04009127 RID: 37159
             [ReadOnly]
             public ComponentTypeHandle<Game.Net.Node> __Game_Net_Node_RO_ComponentTypeHandle;
 
-            // Token: 0x04009026 RID: 36902
+            // Token: 0x04009128 RID: 37160
             [ReadOnly]
             public BufferTypeHandle<ConnectedEdge> __Game_Net_ConnectedEdge_RO_BufferTypeHandle;
 
-            // Token: 0x04009027 RID: 36903
+            // Token: 0x04009129 RID: 37161
             [ReadOnly]
             public ComponentLookup<Curve> __Game_Net_Curve_RO_ComponentLookup;
         }
