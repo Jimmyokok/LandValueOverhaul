@@ -31,6 +31,21 @@
   - PropertyRenterSystem
 - **NOT COMPATIBLE** with RentControl, Renter & LandValue Policy.
 
+## Changelog
+
+- 1.4.0
+  - Game version 1.0.19f1 compatibility.
+
+- 1.3.0
+  - Land value of road edges with no properties is fixed to zero.
+
+- 1.2.0
+  - Land value will not spread to road edges with no properties.
+
+- 1.1.0
+  - Road edges with zero land value will not affect nearby road edges.
+
+
 ## Disclaimer
 
 - This mod is experimental. It alters core game mechanisms, affects game data and has a short-term impact on saves. It may not be compatible with other mods. Please use at your own risk.
