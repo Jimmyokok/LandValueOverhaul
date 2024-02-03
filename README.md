@@ -1,4 +1,5 @@
 > This mod has been updated to 1.4.0, compatible with the recent game update 1.0.19f1. Now the pollution affects the land value just the same as in the original game.
+
 > 本mod已经更新到1.4.0，兼容最新游戏版本更新1.0.19f1。现在污染能够如同原版游戏一样影响地价。
 
 ## 中文用户注意
