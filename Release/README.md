@@ -33,6 +33,9 @@
 
 ## Changelog
 
+- 1.4.1
+  - Fix a bug that causes the "road required" icon to be missing when placing service buildings.
+
 - 1.4.0
   - Game version 1.0.19f1 compatibility.
 
