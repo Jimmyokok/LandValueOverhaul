@@ -784,9 +784,19 @@ namespace LandValueOverhaul.Systems
                         }
                         BuildingData value3 = nativeArray[k];
                         value3.m_Flags |= buildingFlags;
-                        if (layer != Layer.None && layer2 != Layer.None)
+                        if(layer2 == Layer.None)
                         {
-                            value3.m_Flags |= BuildingFlags.RequireRoad;
+                            if (layer != Layer.None)
+                            {
+                                value3.m_Flags |= BuildingFlags.RequireRoad;
+                            }
+                        }
+                        else
+                        {
+                            if ((((int)layer) & 1) != 0)
+                            {
+                                value3.m_Flags |= BuildingFlags.RequireRoad;
+                            }
                         }
                         if ((layer3 & Layer.PowerlineLow) != Layer.None)
                         {

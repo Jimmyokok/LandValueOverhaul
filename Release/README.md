@@ -32,6 +32,8 @@
 - **NOT COMPATIBLE** with RentControl, Renter & LandValue Policy.
 
 ## Changelog
+- 1.4.2
+  - Fix a bug that causes the "road required" icon to be missing when placing parks.
 
 - 1.4.1
   - Fix a bug that causes the "road required" icon to be missing when placing service buildings.
