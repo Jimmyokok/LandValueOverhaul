@@ -32,15 +32,13 @@
   - BuildingInitializeSystem
   - RentAdjustSystem
   - PropertyRenterSystem
+  - BuildingUpkeepSystem
 - **NOT COMPATIBLE** with RentControl, Renter & LandValue Policy.
 
 ## Changelog
-<<<<<<< HEAD
 - 1.4.3
   - Fix a vanilla flaw that generates a wave of delivery trucks when the building upkeep is near zero.
   
-=======
->>>>>>> 066d78c0d0ba097985ed2d07d8122550b1b896b7
 - 1.4.2
   - Fix a bug that causes the "road required" icon to be missing when placing parks.
 
