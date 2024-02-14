@@ -29,6 +29,7 @@
   - BuildingInitializeSystem
   - RentAdjustSystem
   - PropertyRenterSystem
+  - BuildingUpkeepSystem
 - **NOT COMPATIBLE** with RentControl, Renter & LandValue Policy.
 
 ## Changelog
