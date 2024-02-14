@@ -38,7 +38,7 @@ namespace LandValueOverhaul.Systems
         protected override void OnCreate()
         {
             base.OnCreate();
-            logger.LogInfo("Land value update manipulated!");//Add logger info
+            logger.LogInfo("Land value update manipulated!");
             this.m_GroundPollutionSystem = base.World.GetOrCreateSystemManaged<GroundPollutionSystem>();
             this.m_PollutionParameterQuery = base.GetEntityQuery(new ComponentType[]
             {
@@ -198,7 +198,7 @@ namespace LandValueOverhaul.Systems
         // Token: 0x040090F6 RID: 37110
         private EntityQuery m_PollutionParameterQuery;
 
-        private static ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource(MyPluginInfo.PLUGIN_NAME);
+        private static ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource(MyPluginInfo.PLUGIN_GUID);
         // Token: 0x040090F7 RID: 37111
         private LandValueSystem_Custom.TypeHandle __TypeHandle;
 

@@ -42,13 +42,7 @@ namespace LandValueOverhaul.Systems
         protected override void OnCreate()
         {
             base.OnCreate();
-            /*
-            UpdateFrequencyFactor = Plugin.LandValueUpdateFrenquencyFactor.Value;
-            UpdateFrequencyFactor = UpdateFrequencyFactor > 0 ? UpdateFrequencyFactor : 0;
-            UpdateFrequencyFactor = UpdateFrequencyFactor < 16 ? UpdateFrequencyFactor : 16;
-            ResidentialMaxRentIncomeFactor = Plugin.ResidentialMaxRentIncomeFactor.Value > 0 ? (Plugin.ResidentialMaxRentIncomeFactor.Value < 1 ? Plugin.ResidentialMaxRentIncomeFactor.Value : 1) : 0;
-            CompanyMaxRentProfitFactor = Plugin.CompanyMaxRentProfitFactor.Value > 0 ? (Plugin.CompanyMaxRentProfitFactor.Value < 1 ? Plugin.CompanyMaxRentProfitFactor.Value : 1) : 0;
-            */
+            logger.LogInfo("Rent update manipulated!");
             this.m_SimulationSystem = base.World.GetOrCreateSystemManaged<SimulationSystem>();
             this.m_EndFrameBarrier = base.World.GetOrCreateSystemManaged<EndFrameBarrier>();
             this.m_ResourceSystem = base.World.GetOrCreateSystemManaged<ResourceSystem>();
@@ -578,7 +572,7 @@ namespace LandValueOverhaul.Systems
         // Token: 0x04009127 RID: 37159
         protected int cycles;
 
-        private static ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource(MyPluginInfo.PLUGIN_NAME);
+        private static ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource(MyPluginInfo.PLUGIN_GUID);
         // Token: 0x04009128 RID: 37160
         private CustomRentAdjustSystem.TypeHandle __TypeHandle;
 

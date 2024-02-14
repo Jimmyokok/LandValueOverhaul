@@ -30,6 +30,7 @@ using UnityEngine.Scripting;
 using Game.Areas;
 using Game.Rendering;
 using AreaType = Game.Zones.AreaType;
+using BepInEx.Logging;
 
 namespace LandValueOverhaul.Systems
 {
@@ -132,6 +133,7 @@ namespace LandValueOverhaul.Systems
         protected override void OnCreate()
         {
             base.OnCreate();
+            logger.LogInfo("Building upgrade cost altered!");
             this.m_SimulationSystem = base.World.GetOrCreateSystemManaged<SimulationSystem>();
             this.m_EndFrameBarrier = base.World.GetOrCreateSystemManaged<EndFrameBarrier>();
             this.m_CityStatisticsSystem = base.World.GetOrCreateSystemManaged<CityStatisticsSystem>();
@@ -558,6 +560,8 @@ namespace LandValueOverhaul.Systems
 
         // Token: 0x04009086 RID: 36998
         private CustomPropertyRenterSystem.TypeHandle __TypeHandle;
+
+        private static ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource(MyPluginInfo.PLUGIN_GUID);
 
         // Token: 0x0200134C RID: 4940
         [BurstCompile]

@@ -28,30 +28,15 @@ using System.Reflection.Emit;
 
 namespace LandValueOverhaul
 {
-    [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, "1.4.2")]
+    [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, "1.4.3")]
     public class Plugin : BaseUnityPlugin
     {
         private void Awake()
         {
-            Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
-            /*
-            Plugin.LandValueUpdateFrenquencyFactor = base.Config.Bind<float>("LandValueUpdateFrenquency", "LandValueUpdateFrenquency", (float)1.0, "地价更新频率倍数 | Land value update frequency factor");
-            Plugin.LandValueDecreaseThreshold = base.Config.Bind<float>("LandValueDecreaseThreshold", "LandValueDecreaseThreshold", (float)0.5, "地价降低阈值 | Land value decrease threshold");
-            Plugin.ResidentialMaxRentIncomeFactor = base.Config.Bind<float>("ResidentialMaxRentIncomeFactor", "ResidentialMaxRentIncomeFactor", (float)0.45, "居民愿意支付的最高租金-居民收入比例 | Proportion% of a resident's income that contributes to the max rent he is willing to pay");
-            Plugin.CompanyMaxRentProfitFactor = base.Config.Bind<float>("CompanyMaxRentProfitFactor", "CompanyMaxRentProfitFactor", (float)1.0, "企业愿意支付的最高租金-企业利润比例 | Proportion% of a company's income that contributes to the max rent it is willing to pay");
-            Plugin.DistanceFadeFactor = base.Config.Bind<int>("DistanceFadeFactor", "DistanceFadeFactor", 2000, "地价传播的距离上限 | Maximum distance of land value spreading");
-            */
-
+            Logger.LogInfo($"{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION} is loaded!");
             var harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), MyPluginInfo.PLUGIN_GUID + "_Cities2Harmony");
             var patchedMethods = harmony.GetPatchedMethods().ToArray();
         }
-        /*
-        public static ConfigEntry<float> LandValueUpdateFrenquencyFactor;
-        public static ConfigEntry<float> LandValueDecreaseThreshold;
-        public static ConfigEntry<float> ResidentialMaxRentIncomeFactor;
-        public static ConfigEntry<float> CompanyMaxRentProfitFactor;
-        public static ConfigEntry<int> DistanceFadeFactor;
-        */
     }
     [HarmonyPatch(typeof(ServiceFeeParameterPrefab), "LateInitialize")]
     public class ServiceFeeParameterPrefab_LateInitializePatch

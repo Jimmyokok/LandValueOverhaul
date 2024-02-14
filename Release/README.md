@@ -32,6 +32,9 @@
 - **NOT COMPATIBLE** with RentControl, Renter & LandValue Policy.
 
 ## Changelog
+- 1.4.3
+  - Fix a vanilla flaw that generates a wave of delivery trucks when the building upkeep is near zero.
+
 - 1.4.2
   - Fix a bug that causes the "road required" icon to be missing when placing parks.
 

@@ -12,7 +12,6 @@ namespace LandValueOverhaul.Systems
         private static bool Prefix(BuildingInitializeSystem __instance)
         {
             __instance.World.GetOrCreateSystemManaged<CustomBuildingInitializeSystem>();
-            __instance.World.GetOrCreateSystemManaged<UpdateSystem>().UpdateAt<CustomBuildingInitializeSystem>(SystemUpdatePhase.GameSimulation);
             return true;
         }
     }

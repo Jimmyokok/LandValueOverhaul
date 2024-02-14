@@ -1,6 +1,6 @@
 {
     "name": "LandValueOverhaul",
-    "version_number": "1.4.2",
+    "version_number": "1.4.3",
     "website_url": "https://github.com/Jimmyokok/LandValueOverhaul",
     "description": "Overhaul on the game's land value, rent & building upgrade mechanisms.",
     "dependencies": [

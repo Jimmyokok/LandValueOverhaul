@@ -34,15 +34,16 @@ namespace LandValueOverhaul.Systems
         // New method
         public static int GetUpkeep(int level, int residential_properties, float baseUpkeep, int lotSize, AreaType areaType, bool isStorage = false)
         {
+            int upkeepThreshold = math.max(lotSize, math.max(residential_properties, Mathf.CeilToInt(PropertyRenterSystem.GetUpkeepExponent(areaType)) * BuildingUpkeepSystem.kUpdatesPerDay));
             if (areaType == AreaType.Residential)
             {
                 if (residential_properties < lotSize)
                 {
-                    return math.max(residential_properties, Mathf.RoundToInt(math.sqrt((float)level + 3f) * baseUpkeep * (float)residential_properties * 0.5f));
+                    return math.max(upkeepThreshold, Mathf.RoundToInt(math.sqrt((float)level + 3f) * baseUpkeep * (float)residential_properties * 0.5f));
                 }
-                return math.max(lotSize, Mathf.RoundToInt(math.sqrt((float)level + 3f) * baseUpkeep * (float)lotSize * 0.5f));
+                return math.max(upkeepThreshold, Mathf.RoundToInt(math.sqrt((float)level + 3f) * baseUpkeep * (float)lotSize * 0.5f));
             }
-            return math.max(lotSize, Mathf.RoundToInt((float)level * baseUpkeep * (float)lotSize * (isStorage ? 0.5f : 1f)));
+            return math.max(upkeepThreshold, Mathf.RoundToInt((float)level * baseUpkeep * (float)lotSize * (isStorage ? 0.5f : 1f)));
         }
         // Token: 0x0600671B RID: 26395 RVA: 0x00417EF4 File Offset: 0x004160F4
         [Preserve]
@@ -50,7 +51,7 @@ namespace LandValueOverhaul.Systems
         {
             CustomBuildingInitializeSystem.log = LogManager.GetLogger("Simulation", true);
             base.OnCreate();
-            logger.LogInfo("Building upkeep calculation bypassed!");
+            logger.LogInfo("Building upkeep altered!");
             this.m_PrefabSystem = base.World.GetOrCreateSystemManaged<PrefabSystem>();
             this.m_PrefabQuery = base.GetEntityQuery(new EntityQueryDesc[]
             {
@@ -656,7 +657,7 @@ namespace LandValueOverhaul.Systems
         // Token: 0x0400B867 RID: 47207
         private CustomBuildingInitializeSystem.TypeHandle __TypeHandle;
 
-        private static ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource(MyPluginInfo.PLUGIN_NAME);
+        private static ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource(MyPluginInfo.PLUGIN_GUID);
 
         // Token: 0x020017E9 RID: 6121
         [BurstCompile]

@@ -11,7 +11,7 @@
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<AssemblyName>LandValueOverhaul</AssemblyName>
 		<Description>Overhaul on the game's land value, rent and building upgrade mechanisms.</Description>
-		<Version>1.4.2</Version>
+		<Version>1.4.3</Version>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>latest</LangVersion>
 		<RestoreAdditionalProjectSources>

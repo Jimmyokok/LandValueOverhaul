@@ -1,5 +1,5 @@
 ﻿all: build
-BEPINEX_VERSION = 6
+BEPINEX_VERSION = 5
 
 clean:
 	@dotnet clean
