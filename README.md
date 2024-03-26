@@ -1,6 +1,7 @@
-> Game version 1.1.0 has rewritten the land value mechanism. Now the land value is determined only by city services. Since the very machanism that this mod aims to improve no longer exists, this mod will not be updated. 
+> Game version 1.1.0 has rewritten the land value mechanism. Now the land value is determined only by city services. Since the very machanism that this mod aims to improve no longer exists, this mod will not be updated.
+
 > 游戏版本1.1.0大改了地价机制。现在地价只和城市服务有关。因为本mod致力于优化的底层地价更新机制已经不再存在，本mod将不会更新。
-> 
+
 ## 中文用户注意
 - 中文版的介绍位于Readme.pdf中，可以直接查看。
 
