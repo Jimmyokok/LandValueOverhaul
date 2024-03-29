@@ -1,8 +1,9 @@
 > [!NOTE]
-Game version 1.1.0 has rewritten the land value mechanism. Now the land value is determined only by city services. Since the very machanism that this mod aims to improve no longer exists, this mod will not be updated.
-
+**MORE PLAYER FEEDBACK NEEDED for POSSIBLE UPDATE addressing the new land value system and PDXMODS.**
+Game version 1.1.0 has rewritten the land value mechanism. It is reported that this new particular system is still causing trouble. If you have encountered unpleasant game experience caused by the land value, land-value-related rent and building upgrade issues, FEEL FREE TO OPEN UP ISSUES. The more feedbacks I received from you, the more likely this mod be updated.
 > [!NOTE]
-游戏版本1.1.0大改了地价机制。现在地价只和城市服务有关。因为本mod致力于优化的底层地价更新机制已经不再存在，本mod将不会更新。
+**关于新地价机制的游戏体验，需要更多玩家反馈**
+游戏版本1.1.0大改了地价机制。现在地价只和城市服务有关。然而，有玩家反馈新地价机制仍然会造成旧版本的问题，还附带有新的问题。如果你在新版本遇到了地价相关的租金、建筑升级问题，**请在issue中反馈**。我收到的玩家反馈越多，本mod越有可能更新。
 
 ## 中文用户注意
 - 中文版的介绍位于Readme.pdf中，可以直接查看。
