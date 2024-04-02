@@ -7,8 +7,6 @@ using Game.Net;
 using Game.Prefabs;
 using Game.Tools;
 using Game.Zones;
-using Game;
-using Game.Simulation;
 using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
@@ -17,32 +15,31 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Scripting;
-using BepInEx.Logging;
+using Game;
+using Game.Simulation;
 
 namespace LandValueOverhaul.Systems
 {
-    // Token: 0x02001237 RID: 4663
-    [CompilerGenerated]
-    public class CustomBuildingUpkeepSystem : GameSystemBase
+    // Token: 0x0200131E RID: 4894
+    public partial class BuildingUpkeepSystem : GameSystemBase
     {
-        // Token: 0x06005117 RID: 20759 RVA: 0x0030E7AF File Offset: 0x0030C9AF
+        // Token: 0x0600569E RID: 22174 RVA: 0x0032901F File Offset: 0x0032721F
         public override int GetUpdateInterval(SystemUpdatePhase phase)
         {
-            return 262144 / (CustomBuildingUpkeepSystem.kUpdatesPerDay * 16);
+            return 262144 / (BuildingUpkeepSystem.kUpdatesPerDay * 16);
         }
 
-        // Token: 0x06005118 RID: 20760 RVA: 0x0030E7BF File Offset: 0x0030C9BF
+        // Token: 0x0600569F RID: 22175 RVA: 0x0032902F File Offset: 0x0032722F
         public static float GetHeatingMultiplier(float temperature)
         {
             return math.max(0f, 15f - temperature);
         }
 
-        // Token: 0x06005119 RID: 20761 RVA: 0x0030E7D4 File Offset: 0x0030C9D4
+        // Token: 0x060056A0 RID: 22176 RVA: 0x00329044 File Offset: 0x00327244
         [Preserve]
         protected override void OnCreate()
         {
             base.OnCreate();
-            logger.LogInfo("Building material upkeep mechanism altered!");
             this.m_SimulationSystem = base.World.GetOrCreateSystemManaged<SimulationSystem>();
             this.m_EndFrameBarrier = base.World.GetOrCreateSystemManaged<EndFrameBarrier>();
             this.m_PropertyRenterSystem = base.World.GetOrCreateSystemManaged<PropertyRenterSystem>();
@@ -69,9 +66,10 @@ namespace LandValueOverhaul.Systems
                     }
                 }
             });
+            Mod.log.Info($"Modded BuildingUpkeepSystem created!");
         }
 
-        // Token: 0x0600511A RID: 20762 RVA: 0x0030E8E1 File Offset: 0x0030CAE1
+        // Token: 0x060056A1 RID: 22177 RVA: 0x00329151 File Offset: 0x00327351
         [Preserve]
         protected override void OnDestroy()
         {
@@ -79,11 +77,11 @@ namespace LandValueOverhaul.Systems
             this.m_ExpenseQueue.Dispose();
         }
 
-        // Token: 0x0600511B RID: 20763 RVA: 0x0030E8F4 File Offset: 0x0030CAF4
+        // Token: 0x060056A2 RID: 22178 RVA: 0x00329164 File Offset: 0x00327364
         [Preserve]
         protected override void OnUpdate()
         {
-            uint updateFrame = SimulationUtils.GetUpdateFrame(this.m_SimulationSystem.frameIndex, CustomBuildingUpkeepSystem.kUpdatesPerDay, 16);
+            uint updateFrame = SimulationUtils.GetUpdateFrame(this.m_SimulationSystem.frameIndex, BuildingUpkeepSystem.kUpdatesPerDay, 16);
             this.__TypeHandle.__Game_Prefabs_ResourceData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
             this.__TypeHandle.__Game_Prefabs_ZoneData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
             this.__TypeHandle.__Game_Prefabs_SpawnableBuildingData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
@@ -96,7 +94,7 @@ namespace LandValueOverhaul.Systems
             this.__TypeHandle.__Unity_Entities_Entity_TypeHandle.Update(ref base.CheckedStateRef);
             this.__TypeHandle.__Game_Prefabs_PrefabRef_RO_ComponentTypeHandle.Update(ref base.CheckedStateRef);
             this.__TypeHandle.__Game_Buildings_BuildingCondition_RW_ComponentTypeHandle.Update(ref base.CheckedStateRef);
-            CustomBuildingUpkeepSystem.BuildingUpkeepJob buildingUpkeepJob = default(CustomBuildingUpkeepSystem.BuildingUpkeepJob);
+            BuildingUpkeepSystem.BuildingUpkeepJob buildingUpkeepJob = default(BuildingUpkeepSystem.BuildingUpkeepJob);
             buildingUpkeepJob.m_ConditionType = this.__TypeHandle.__Game_Buildings_BuildingCondition_RW_ComponentTypeHandle;
             buildingUpkeepJob.m_PrefabType = this.__TypeHandle.__Game_Prefabs_PrefabRef_RO_ComponentTypeHandle;
             buildingUpkeepJob.m_EntityType = this.__TypeHandle.__Unity_Entities_Entity_TypeHandle;
@@ -114,27 +112,27 @@ namespace LandValueOverhaul.Systems
             buildingUpkeepJob.m_SimulationFrame = this.m_SimulationSystem.frameIndex;
             buildingUpkeepJob.m_CommandBuffer = this.m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter();
             buildingUpkeepJob.m_LandlordExpenseQueue = this.m_ExpenseQueue.AsParallelWriter();
-            buildingUpkeepJob.m_TemperatureUpkeep = CustomBuildingUpkeepSystem.GetHeatingMultiplier(this.m_ClimateSystem.temperature);
-            CustomBuildingUpkeepSystem.BuildingUpkeepJob jobData = buildingUpkeepJob;
+            buildingUpkeepJob.m_TemperatureUpkeep = BuildingUpkeepSystem.GetHeatingMultiplier(this.m_ClimateSystem.temperature);
+            BuildingUpkeepSystem.BuildingUpkeepJob jobData = buildingUpkeepJob;
             base.Dependency = jobData.ScheduleParallel(this.m_BuildingGroup, base.Dependency);
             this.m_EndFrameBarrier.AddJobHandleForProducer(base.Dependency);
             this.m_ResourceSystem.AddPrefabsReader(base.Dependency);
             this.__TypeHandle.__Game_Economy_Resources_RW_BufferLookup.Update(ref base.CheckedStateRef);
-            CustomBuildingUpkeepSystem.LandlordUpkeepJob landlordUpkeepJob = default(CustomBuildingUpkeepSystem.LandlordUpkeepJob);
+            BuildingUpkeepSystem.LandlordUpkeepJob landlordUpkeepJob = default(BuildingUpkeepSystem.LandlordUpkeepJob);
             landlordUpkeepJob.m_Resources = this.__TypeHandle.__Game_Economy_Resources_RW_BufferLookup;
             landlordUpkeepJob.m_Landlords = this.m_PropertyRenterSystem.Landlords;
             landlordUpkeepJob.m_Queue = this.m_ExpenseQueue;
-            CustomBuildingUpkeepSystem.LandlordUpkeepJob jobData2 = landlordUpkeepJob;
+            BuildingUpkeepSystem.LandlordUpkeepJob jobData2 = landlordUpkeepJob;
             base.Dependency = jobData2.Schedule(base.Dependency);
         }
 
-        // Token: 0x0600511C RID: 20764 RVA: 0x00002E1D File Offset: 0x0000101D
+        // Token: 0x060056A3 RID: 22179 RVA: 0x00003211 File Offset: 0x00001411
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void __AssignQueries(ref SystemState state)
         {
         }
 
-        // Token: 0x0600511D RID: 20765 RVA: 0x0030EC16 File Offset: 0x0030CE16
+        // Token: 0x060056A4 RID: 22180 RVA: 0x00329486 File Offset: 0x00327686
         protected override void OnCreateForCompiler()
         {
             base.OnCreateForCompiler();
@@ -142,50 +140,46 @@ namespace LandValueOverhaul.Systems
             this.__TypeHandle.__AssignHandles(ref base.CheckedStateRef);
         }
 
-        // Token: 0x0600511E RID: 20766 RVA: 0x00006953 File Offset: 0x00004B53
+        // Token: 0x060056A5 RID: 22181 RVA: 0x00006D67 File Offset: 0x00004F67
         [Preserve]
-        public CustomBuildingUpkeepSystem()
+        public BuildingUpkeepSystem()
         {
         }
 
-        // Token: 0x04008570 RID: 34160
+        // Token: 0x040089CA RID: 35274
         public static readonly int kUpdatesPerDay = 16;
 
-        // Token: 0x04008571 RID: 34161
+        // Token: 0x040089CB RID: 35275
         public static readonly int kMaterialUpkeep = 4;
 
-        // Token: 0x04008572 RID: 34162
+        // Token: 0x040089CC RID: 35276
         private SimulationSystem m_SimulationSystem;
 
-        // Token: 0x04008573 RID: 34163
+        // Token: 0x040089CD RID: 35277
         private EndFrameBarrier m_EndFrameBarrier;
 
-        // Token: 0x04008574 RID: 34164
+        // Token: 0x040089CE RID: 35278
         private PropertyRenterSystem m_PropertyRenterSystem;
 
-        // Token: 0x04008575 RID: 34165
+        // Token: 0x040089CF RID: 35279
         private ResourceSystem m_ResourceSystem;
 
-        // Token: 0x04008576 RID: 34166
+        // Token: 0x040089D0 RID: 35280
         private ClimateSystem m_ClimateSystem;
 
-        // Token: 0x04008577 RID: 34167
+        // Token: 0x040089D1 RID: 35281
         private NativeQueue<int> m_ExpenseQueue;
 
-        // Token: 0x04008578 RID: 34168
+        // Token: 0x040089D2 RID: 35282
         private EntityQuery m_BuildingGroup;
 
-        // Token: 0x04008579 RID: 34169
-        private CustomBuildingUpkeepSystem.TypeHandle __TypeHandle;
+        // Token: 0x040089D3 RID: 35283
+        private BuildingUpkeepSystem.TypeHandle __TypeHandle;
 
-        private static ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource(MyPluginInfo.PLUGIN_GUID);
-
-
-        // Token: 0x02001238 RID: 4664
-        [BurstCompile]
+        // Token: 0x0200131F RID: 4895
         private struct LandlordUpkeepJob : IJob
         {
-            // Token: 0x06005120 RID: 20768 RVA: 0x0030EC4C File Offset: 0x0030CE4C
+            // Token: 0x060056A7 RID: 22183 RVA: 0x003294BC File Offset: 0x003276BC
             public void Execute()
             {
                 if (this.m_Resources.HasBuffer(this.m_Landlords))
@@ -200,21 +194,20 @@ namespace LandValueOverhaul.Systems
                 }
             }
 
-            // Token: 0x0400857A RID: 34170
+            // Token: 0x040089D4 RID: 35284
             public BufferLookup<Game.Economy.Resources> m_Resources;
 
-            // Token: 0x0400857B RID: 34171
+            // Token: 0x040089D5 RID: 35285
             public Entity m_Landlords;
 
-            // Token: 0x0400857C RID: 34172
+            // Token: 0x040089D6 RID: 35286
             public NativeQueue<int> m_Queue;
         }
 
-        // Token: 0x02001239 RID: 4665
-        [BurstCompile]
+        // Token: 0x02001320 RID: 4896
         private struct BuildingUpkeepJob : IJobChunk
         {
-            // Token: 0x06005121 RID: 20769 RVA: 0x0030ECA0 File Offset: 0x0030CEA0
+            // Token: 0x060056A8 RID: 22184 RVA: 0x00329510 File Offset: 0x00327710
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 if (chunk.GetSharedComponent<UpdateFrame>(this.m_UpdateFrameType).m_Index != this.m_UpdateFrameIndex)
@@ -233,7 +226,7 @@ namespace LandValueOverhaul.Systems
                     BuildingData buildingData = this.m_BuildingDatas[prefab];
                     BuildingPropertyData buildingPropertyData = this.m_BuildingPropertyDatas[prefab];
                     BuildingCondition buildingCondition = nativeArray3[i];
-                    int num2 = this.m_ConsumptionDatas[prefab].m_Upkeep / CustomBuildingUpkeepSystem.kUpdatesPerDay;
+                    int num2 = this.m_ConsumptionDatas[prefab].m_Upkeep / BuildingUpkeepSystem.kUpdatesPerDay;
                     if (buildingCondition.m_Condition < 0)
                     {
                         AreaType type = AreaType.None;
@@ -242,16 +235,15 @@ namespace LandValueOverhaul.Systems
                             SpawnableBuildingData spawnableBuildingData = this.m_SpawnableBuildingData[prefab];
                             type = this.m_ZoneData[spawnableBuildingData.m_ZonePrefab].m_AreaType;
                         }
-                        num2 = Mathf.RoundToInt((float)num2 / PropertyRenterSystem.GetUpkeepExponent(type));
                     }
                     buildingCondition.m_Condition -= num2;
                     nativeArray3[i] = buildingCondition;
-                    int num3 = num2 / CustomBuildingUpkeepSystem.kMaterialUpkeep;
+                    int num3 = num2 / BuildingUpkeepSystem.kMaterialUpkeep;
                     num += num2 - num3;
                     Unity.Mathematics.Random random = new Unity.Mathematics.Random((uint)(1L + (long)entity.Index * (long)((ulong)this.m_SimulationFrame)));
                     Resource resource = random.NextBool() ? Resource.Timber : Resource.Concrete;
                     float price = this.m_ResourceDatas[this.m_ResourcePrefabs[resource]].m_Price;
-                    float num4 = math.sqrt((float)(buildingData.m_LotSize.x * buildingData.m_LotSize.y * buildingPropertyData.CountProperties())) * this.m_TemperatureUpkeep / (float)CustomBuildingUpkeepSystem.kUpdatesPerDay;
+                    float num4 = math.sqrt((float)(buildingData.m_LotSize.x * buildingData.m_LotSize.y * buildingPropertyData.CountProperties())) * this.m_TemperatureUpkeep / (float)BuildingUpkeepSystem.kUpdatesPerDay;
                     if (random.NextInt(Mathf.RoundToInt(4000f * price)) < num3)
                     {
                         Entity e = this.m_CommandBuffer.CreateEntity(unfilteredChunkIndex);
@@ -297,83 +289,83 @@ namespace LandValueOverhaul.Systems
                 this.m_LandlordExpenseQueue.Enqueue(-num);
             }
 
-            // Token: 0x06005122 RID: 20770 RVA: 0x0030F047 File Offset: 0x0030D247
+            // Token: 0x060056A9 RID: 22185 RVA: 0x003298B7 File Offset: 0x00327AB7
             void IJobChunk.Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 this.Execute(chunk, unfilteredChunkIndex, useEnabledMask, chunkEnabledMask);
             }
 
-            // Token: 0x0400857D RID: 34173
+            // Token: 0x040089D7 RID: 35287
             [ReadOnly]
             public EntityTypeHandle m_EntityType;
 
-            // Token: 0x0400857E RID: 34174
+            // Token: 0x040089D8 RID: 35288
             public ComponentTypeHandle<BuildingCondition> m_ConditionType;
 
-            // Token: 0x0400857F RID: 34175
+            // Token: 0x040089D9 RID: 35289
             [ReadOnly]
             public SharedComponentTypeHandle<UpdateFrame> m_UpdateFrameType;
 
-            // Token: 0x04008580 RID: 34176
+            // Token: 0x040089DA RID: 35290
             [ReadOnly]
             public ComponentTypeHandle<PrefabRef> m_PrefabType;
 
-            // Token: 0x04008581 RID: 34177
+            // Token: 0x040089DB RID: 35291
             [ReadOnly]
             public ComponentTypeHandle<Building> m_BuildingType;
 
-            // Token: 0x04008582 RID: 34178
+            // Token: 0x040089DC RID: 35292
             [ReadOnly]
             public ResourcePrefabs m_ResourcePrefabs;
 
-            // Token: 0x04008583 RID: 34179
+            // Token: 0x040089DD RID: 35293
             [ReadOnly]
             public ComponentLookup<ResourceData> m_ResourceDatas;
 
-            // Token: 0x04008584 RID: 34180
+            // Token: 0x040089DE RID: 35294
             [ReadOnly]
             public ComponentLookup<BuildingData> m_BuildingDatas;
 
-            // Token: 0x04008585 RID: 34181
+            // Token: 0x040089DF RID: 35295
             [ReadOnly]
             public ComponentLookup<BuildingPropertyData> m_BuildingPropertyDatas;
 
-            // Token: 0x04008586 RID: 34182
+            // Token: 0x040089E0 RID: 35296
             [ReadOnly]
             public ComponentLookup<SpawnableBuildingData> m_SpawnableBuildingData;
 
-            // Token: 0x04008587 RID: 34183
+            // Token: 0x040089E1 RID: 35297
             [ReadOnly]
             public ComponentLookup<ZoneData> m_ZoneData;
 
-            // Token: 0x04008588 RID: 34184
+            // Token: 0x040089E2 RID: 35298
             [ReadOnly]
             public ComponentLookup<ConsumptionData> m_ConsumptionDatas;
 
-            // Token: 0x04008589 RID: 34185
+            // Token: 0x040089E3 RID: 35299
             [ReadOnly]
             public BufferLookup<ResourceAvailability> m_Availabilities;
 
-            // Token: 0x0400858A RID: 34186
+            // Token: 0x040089E4 RID: 35300
             public uint m_UpdateFrameIndex;
 
-            // Token: 0x0400858B RID: 34187
+            // Token: 0x040089E5 RID: 35301
             public uint m_SimulationFrame;
 
-            // Token: 0x0400858C RID: 34188
+            // Token: 0x040089E6 RID: 35302
             public float m_TemperatureUpkeep;
 
-            // Token: 0x0400858D RID: 34189
+            // Token: 0x040089E7 RID: 35303
             public NativeQueue<int>.ParallelWriter m_LandlordExpenseQueue;
 
-            // Token: 0x0400858E RID: 34190
+            // Token: 0x040089E8 RID: 35304
             public EntityCommandBuffer.ParallelWriter m_CommandBuffer;
         }
 
-        // Token: 0x0200123A RID: 4666
+        // Token: 0x02001321 RID: 4897
         private struct TypeHandle
         {
-            // Token: 0x06005123 RID: 20771 RVA: 0x0030F054 File Offset: 0x0030D254
+            // Token: 0x060056AA RID: 22186 RVA: 0x003298C4 File Offset: 0x00327AC4
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void __AssignHandles(ref SystemState state)
             {
@@ -392,53 +384,53 @@ namespace LandValueOverhaul.Systems
                 this.__Game_Economy_Resources_RW_BufferLookup = state.GetBufferLookup<Game.Economy.Resources>(false);
             }
 
-            // Token: 0x0400858F RID: 34191
+            // Token: 0x040089E9 RID: 35305
             public ComponentTypeHandle<BuildingCondition> __Game_Buildings_BuildingCondition_RW_ComponentTypeHandle;
 
-            // Token: 0x04008590 RID: 34192
+            // Token: 0x040089EA RID: 35306
             [ReadOnly]
             public ComponentTypeHandle<PrefabRef> __Game_Prefabs_PrefabRef_RO_ComponentTypeHandle;
 
-            // Token: 0x04008591 RID: 34193
+            // Token: 0x040089EB RID: 35307
             [ReadOnly]
             public EntityTypeHandle __Unity_Entities_Entity_TypeHandle;
 
-            // Token: 0x04008592 RID: 34194
+            // Token: 0x040089EC RID: 35308
             [ReadOnly]
             public ComponentTypeHandle<Building> __Game_Buildings_Building_RO_ComponentTypeHandle;
 
-            // Token: 0x04008593 RID: 34195
+            // Token: 0x040089ED RID: 35309
             public SharedComponentTypeHandle<UpdateFrame> __Game_Simulation_UpdateFrame_SharedComponentTypeHandle;
 
-            // Token: 0x04008594 RID: 34196
+            // Token: 0x040089EE RID: 35310
             [ReadOnly]
             public ComponentLookup<ConsumptionData> __Game_Prefabs_ConsumptionData_RO_ComponentLookup;
 
-            // Token: 0x04008595 RID: 34197
+            // Token: 0x040089EF RID: 35311
             [ReadOnly]
             public BufferLookup<ResourceAvailability> __Game_Net_ResourceAvailability_RO_BufferLookup;
 
-            // Token: 0x04008596 RID: 34198
+            // Token: 0x040089F0 RID: 35312
             [ReadOnly]
             public ComponentLookup<BuildingData> __Game_Prefabs_BuildingData_RO_ComponentLookup;
 
-            // Token: 0x04008597 RID: 34199
+            // Token: 0x040089F1 RID: 35313
             [ReadOnly]
             public ComponentLookup<BuildingPropertyData> __Game_Prefabs_BuildingPropertyData_RO_ComponentLookup;
 
-            // Token: 0x04008598 RID: 34200
+            // Token: 0x040089F2 RID: 35314
             [ReadOnly]
             public ComponentLookup<SpawnableBuildingData> __Game_Prefabs_SpawnableBuildingData_RO_ComponentLookup;
 
-            // Token: 0x04008599 RID: 34201
+            // Token: 0x040089F3 RID: 35315
             [ReadOnly]
             public ComponentLookup<ZoneData> __Game_Prefabs_ZoneData_RO_ComponentLookup;
 
-            // Token: 0x0400859A RID: 34202
+            // Token: 0x040089F4 RID: 35316
             [ReadOnly]
             public ComponentLookup<ResourceData> __Game_Prefabs_ResourceData_RO_ComponentLookup;
 
-            // Token: 0x0400859B RID: 34203
+            // Token: 0x040089F5 RID: 35317
             public BufferLookup<Game.Economy.Resources> __Game_Economy_Resources_RW_BufferLookup;
         }
     }

@@ -1,57 +1,39 @@
-﻿using Game;
-using Game.Simulation;
+﻿using System;
 using System.Runtime.CompilerServices;
 using Colossal.Collections;
+using Colossal.Logging;
 using Colossal.Mathematics;
 using Game.Common;
 using Game.Economy;
 using Game.Net;
 using Game.Objects;
 using Game.Rendering;
+using Game.Simulation;
 using Game.Zones;
 using Unity.Burst;
+using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Scripting;
+using Game;
 using Game.Prefabs;
 using SubObject = Game.Prefabs.SubObject;
 using SubNet = Game.Prefabs.SubNet;
 using TransformerData = Game.Prefabs.TransformerData;
-using Layer = Game.Net.Layer;
-using BepInEx.Logging;
-using Colossal.Logging;
 
 namespace LandValueOverhaul.Systems
 {
-
-    // Token: 0x020017E8 RID: 6120
-    [CompilerGenerated]
-    public class CustomBuildingInitializeSystem : GameSystemBase
+    // Token: 0x020018CB RID: 6347
+    public partial class BuildingInitializeSystem : GameSystemBase
     {
-        // New method
-        public static int GetUpkeep(int level, int residential_properties, float baseUpkeep, int lotSize, AreaType areaType, bool isStorage = false)
-        {
-            int upkeepThreshold = math.max(lotSize, math.max(residential_properties, Mathf.CeilToInt(PropertyRenterSystem.GetUpkeepExponent(areaType)) * BuildingUpkeepSystem.kUpdatesPerDay));
-            if (areaType == AreaType.Residential)
-            {
-                if (residential_properties < lotSize)
-                {
-                    return math.max(upkeepThreshold, Mathf.RoundToInt(math.sqrt((float)level + 3f) * baseUpkeep * (float)residential_properties * 0.5f));
-                }
-                return math.max(upkeepThreshold, Mathf.RoundToInt(math.sqrt((float)level + 3f) * baseUpkeep * (float)lotSize * 0.5f));
-            }
-            return math.max(upkeepThreshold, Mathf.RoundToInt((float)level * baseUpkeep * (float)lotSize * (isStorage ? 0.5f : 1f)));
-        }
-        // Token: 0x0600671B RID: 26395 RVA: 0x00417EF4 File Offset: 0x004160F4
-        [Preserve]
+        // Token: 0x06006C9B RID: 27803 RVA: 0x004320DC File Offset: 0x004302DC
         protected override void OnCreate()
         {
-            CustomBuildingInitializeSystem.log = LogManager.GetLogger("Simulation", true);
+            BuildingInitializeSystem.log = LogManager.GetLogger("Simulation");
             base.OnCreate();
-            logger.LogInfo("Building upkeep altered!");
             this.m_PrefabSystem = base.World.GetOrCreateSystemManaged<PrefabSystem>();
             this.m_PrefabQuery = base.GetEntityQuery(new EntityQueryDesc[]
             {
@@ -78,10 +60,10 @@ namespace LandValueOverhaul.Systems
             base.RequireForUpdate(this.m_PrefabQuery);
         }
 
-        // Token: 0x0600671C RID: 26396 RVA: 0x00417FD0 File Offset: 0x004161D0
-        [Preserve]
+        // Token: 0x06006C9C RID: 27804 RVA: 0x004321B8 File Offset: 0x004303B8
         protected override void OnUpdate()
         {
+            Mod.log.Info("Building upkeep modified!");
             EntityCommandBuffer entityCommandBuffer = new EntityCommandBuffer(Allocator.TempJob, PlaybackPolicy.SinglePlayback);
             NativeArray<ArchetypeChunk> chunks = this.m_PrefabQuery.ToArchetypeChunkArray(Allocator.TempJob);
             this.__TypeHandle.__Unity_Entities_Entity_TypeHandle.Update(ref base.CheckedStateRef);
@@ -275,7 +257,7 @@ namespace LandValueOverhaul.Systems
                         {
                             BuildingTerraformOverride component2 = prefab2.GetComponent<BuildingTerraformOverride>();
                             BuildingTerraformData value4 = nativeArray12[k];
-                            CustomBuildingInitializeSystem.InitializeTerraformData(component2, ref value4, bounds, xz2);
+                            BuildingInitializeSystem.InitializeTerraformData(component2, ref value4, bounds, xz2);
                             nativeArray12[k] = value4;
                         }
                         objectGeometryData.m_Size = math.max(ObjectUtils.GetSize(objectGeometryData.m_Bounds), new float3(1f, 5f, 1f));
@@ -344,15 +326,16 @@ namespace LandValueOverhaul.Systems
                             {
                                 ZoneServiceConsumptionData zoneServiceConsumptionData = _Game_Prefabs_ZoneServiceConsumptionData_RO_ComponentLookup[zonePrefab];
                                 ref ConsumptionData ptr = ref nativeArray5.ElementAt(m);
+                                //Mod.log.Info($"{residentialProperties}, {buildingPropertyData.CountProperties()}, {Game.Simulation.PropertyRenterSystem.GetUpkeepExponent(zoneData.m_AreaType)}");
                                 if (zoneData.m_AreaType == AreaType.Residential)
                                 {
                                     if (flag2)
                                     {
-                                        ptr.m_Upkeep = GetUpkeep(2, residentialProperties, zoneServiceConsumptionData.m_Upkeep, lotSize, zoneData.m_AreaType, false);
+                                        ptr.m_Upkeep = PropertyRenterSystem.GetUpkeep(2, residentialProperties, zoneServiceConsumptionData.m_Upkeep, lotSize, zoneData.m_AreaType, false);
                                     }
                                     else
                                     {
-                                        ptr.m_Upkeep = GetUpkeep(level, residentialProperties, zoneServiceConsumptionData.m_Upkeep, lotSize, zoneData.m_AreaType, false);
+                                        ptr.m_Upkeep = PropertyRenterSystem.GetUpkeep(level, residentialProperties, zoneServiceConsumptionData.m_Upkeep, lotSize, zoneData.m_AreaType, false);
                                     }
                                 }
                                 else
@@ -360,11 +343,11 @@ namespace LandValueOverhaul.Systems
                                     bool isStorage = buildingPropertyData.m_AllowedStored > Resource.NoResource;
                                     if (flag2)
                                     {
-                                        ptr.m_Upkeep = GetUpkeep(2, residentialProperties, zoneServiceConsumptionData.m_Upkeep, lotSize, zoneData.m_AreaType, false);
+                                        ptr.m_Upkeep = PropertyRenterSystem.GetUpkeep(2, residentialProperties, zoneServiceConsumptionData.m_Upkeep, lotSize, zoneData.m_AreaType, false);
                                     }
                                     else
                                     {
-                                        ptr.m_Upkeep = GetUpkeep(level, residentialProperties, zoneServiceConsumptionData.m_Upkeep, lotSize, zoneData.m_AreaType, isStorage);
+                                        ptr.m_Upkeep = PropertyRenterSystem.GetUpkeep(level, residentialProperties, zoneServiceConsumptionData.m_Upkeep, lotSize, zoneData.m_AreaType, isStorage);
                                     }
                                 }
                             }
@@ -409,7 +392,7 @@ namespace LandValueOverhaul.Systems
                             {
                                 if (dynamicBuffer2[num4].m_Upkeep.m_Resource == Resource.Money)
                                 {
-                                    CustomBuildingInitializeSystem.log.WarnFormat("Warning: {0} has monetary upkeep in both ConsumptionData and CityServiceUpkeep", this.m_PrefabSystem.GetPrefab<PrefabBase>(nativeArray10[num3]).name);
+                                    BuildingInitializeSystem.log.WarnFormat("Warning: {0} has monetary upkeep in both ConsumptionData and CityServiceUpkeep", this.m_PrefabSystem.GetPrefab<PrefabBase>(nativeArray10[num3]).name);
                                     ServiceUpkeepData value7 = dynamicBuffer2[num4];
                                     value7.m_Upkeep.m_Amount = value7.m_Upkeep.m_Amount + nativeArray5[num3].m_Upkeep;
                                     dynamicBuffer2[num4] = value7;
@@ -484,7 +467,7 @@ namespace LandValueOverhaul.Systems
             this.__TypeHandle.__Game_Prefabs_ExtractorFacilityData_RO_ComponentTypeHandle.Update(ref base.CheckedStateRef);
             this.__TypeHandle.__Game_Prefabs_ServiceUpgradeData_RO_ComponentTypeHandle.Update(ref base.CheckedStateRef);
             this.__TypeHandle.__Game_Prefabs_SpawnableBuildingData_RO_ComponentTypeHandle.Update(ref base.CheckedStateRef);
-            CustomBuildingInitializeSystem.FindConnectionRequirementsJob jobData = default(CustomBuildingInitializeSystem.FindConnectionRequirementsJob);
+            BuildingInitializeSystem.FindConnectionRequirementsJob jobData = default(BuildingInitializeSystem.FindConnectionRequirementsJob);
             jobData.m_SpawnableBuildingDataType = this.__TypeHandle.__Game_Prefabs_SpawnableBuildingData_RO_ComponentTypeHandle;
             jobData.m_ServiceUpgradeDataType = this.__TypeHandle.__Game_Prefabs_ServiceUpgradeData_RO_ComponentTypeHandle;
             jobData.m_ExtractorFacilityDataType = this.__TypeHandle.__Game_Prefabs_ExtractorFacilityData_RO_ComponentTypeHandle;
@@ -521,7 +504,7 @@ namespace LandValueOverhaul.Systems
             entityCommandBuffer.Dispose();
         }
 
-        // Token: 0x0600671D RID: 26397 RVA: 0x004194B8 File Offset: 0x004176B8
+        // Token: 0x06006C9D RID: 27805 RVA: 0x004336A0 File Offset: 0x004318A0
         private void InitializeLotSize(BuildingPrefab buildingPrefab, BuildingTerraformOverride terraformOverride, ref ObjectGeometryData objectGeometryData, ref BuildingTerraformData buildingTerraformData, ref BuildingData buildingData)
         {
             float2 @float = new float2((float)buildingPrefab.m_LotWidth, (float)buildingPrefab.m_LotDepth);
@@ -543,7 +526,7 @@ namespace LandValueOverhaul.Systems
             Bounds2 bounds;
             bounds.max = buildingData.m_LotSize * 4;
             bounds.min = -bounds.max;
-            CustomBuildingInitializeSystem.InitializeTerraformData(terraformOverride, ref buildingTerraformData, bounds, xz2);
+            BuildingInitializeSystem.InitializeTerraformData(terraformOverride, ref buildingTerraformData, bounds, xz2);
             objectGeometryData.m_Layers |= MeshLayer.Default;
             objectGeometryData.m_MinLod = math.min(objectGeometryData.m_MinLod, RenderingUtils.CalculateLodLimit(RenderingUtils.GetRenderingSize(new float3(@float.x, 0f, @float.y))));
             switch (buildingPrefab.m_AccessType)
@@ -572,7 +555,7 @@ namespace LandValueOverhaul.Systems
             }
             if (math.any(objectGeometryData.m_Size.xz > @float + 0.5f))
             {
-                CustomBuildingInitializeSystem.log.WarnFormat("Building geometry doesn't fit inside the lot ({0}): {1}m x {2}m ({3}x{4})", buildingPrefab.name, objectGeometryData.m_Size.x, objectGeometryData.m_Size.z, buildingData.m_LotSize.x, buildingData.m_LotSize.y);
+                BuildingInitializeSystem.log.WarnFormat("Building geometry doesn't fit inside the lot ({0}): {1}m x {2}m ({3}x{4})", buildingPrefab.name, objectGeometryData.m_Size.x, objectGeometryData.m_Size.z, buildingData.m_LotSize.x, buildingData.m_LotSize.y);
             }
             @float -= 0.4f;
             objectGeometryData.m_Size.xz = @float;
@@ -583,7 +566,7 @@ namespace LandValueOverhaul.Systems
             objectGeometryData.m_Bounds.max.y = math.max(objectGeometryData.m_Bounds.max.y, 5f);
         }
 
-        // Token: 0x0600671E RID: 26398 RVA: 0x004197E0 File Offset: 0x004179E0
+        // Token: 0x06006C9E RID: 27806 RVA: 0x004339C8 File Offset: 0x00431BC8
         public static void InitializeTerraformData(BuildingTerraformOverride terraformOverride, ref BuildingTerraformData buildingTerraformData, Bounds2 lotBounds, Bounds2 flatBounds)
         {
             float3 rhs = new float3(1f, 0f, 1f);
@@ -622,13 +605,13 @@ namespace LandValueOverhaul.Systems
             buildingTerraformData.m_FlatZ1 = math.max(float4, math.min(x2, float2));
         }
 
-        // Token: 0x0600671F RID: 26399 RVA: 0x00002E1D File Offset: 0x0000101D
+        // Token: 0x06006C9F RID: 27807 RVA: 0x00003211 File Offset: 0x00001411
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void __AssignQueries(ref SystemState state)
         {
         }
 
-        // Token: 0x06006720 RID: 26400 RVA: 0x00419A67 File Offset: 0x00417C67
+        // Token: 0x06006CA0 RID: 27808 RVA: 0x00433C4F File Offset: 0x00431E4F
         protected override void OnCreateForCompiler()
         {
             base.OnCreateForCompiler();
@@ -636,34 +619,30 @@ namespace LandValueOverhaul.Systems
             this.__TypeHandle.__AssignHandles(ref base.CheckedStateRef);
         }
 
-        // Token: 0x06006721 RID: 26401 RVA: 0x00006953 File Offset: 0x00004B53
-        [Preserve]
-        public CustomBuildingInitializeSystem()
+        // Token: 0x06006CA1 RID: 27809 RVA: 0x00006D67 File Offset: 0x00004F67
+        public BuildingInitializeSystem()
         {
         }
 
-        // Token: 0x0400B863 RID: 47203
+        // Token: 0x0400BC87 RID: 48263
         private static ILog log;
 
-        // Token: 0x0400B864 RID: 47204
+        // Token: 0x0400BC88 RID: 48264
         private EntityQuery m_PrefabQuery;
 
-        // Token: 0x0400B865 RID: 47205
+        // Token: 0x0400BC89 RID: 48265
         private EntityQuery m_ConfigurationQuery;
 
-        // Token: 0x0400B866 RID: 47206
+        // Token: 0x0400BC8A RID: 48266
         private PrefabSystem m_PrefabSystem;
 
-        // Token: 0x0400B867 RID: 47207
-        private CustomBuildingInitializeSystem.TypeHandle __TypeHandle;
+        // Token: 0x0400BC8B RID: 48267
+        private BuildingInitializeSystem.TypeHandle __TypeHandle;
 
-        private static ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource(MyPluginInfo.PLUGIN_GUID);
-
-        // Token: 0x020017E9 RID: 6121
-        [BurstCompile]
+        // Token: 0x020018CC RID: 6348
         private struct FindConnectionRequirementsJob : IJobParallelFor
         {
-            // Token: 0x06006722 RID: 26402 RVA: 0x00419A8C File Offset: 0x00417C8C
+            // Token: 0x06006CA2 RID: 27810 RVA: 0x00433C74 File Offset: 0x00431E74
             public void Execute(int index)
             {
                 ArchetypeChunk archetypeChunk = this.m_Chunks[index];
@@ -785,7 +764,7 @@ namespace LandValueOverhaul.Systems
                         }
                         BuildingData value3 = nativeArray[k];
                         value3.m_Flags |= buildingFlags;
-                        if(layer2 == Layer.None)
+                        if (layer2 == Layer.None)
                         {
                             if (layer != Layer.None)
                             {
@@ -957,7 +936,7 @@ namespace LandValueOverhaul.Systems
                 }
             }
 
-            // Token: 0x06006723 RID: 26403 RVA: 0x0041A534 File Offset: 0x00418734
+            // Token: 0x06006CA3 RID: 27811 RVA: 0x0043471C File Offset: 0x0043291C
             private void CheckPropFlags(ref BuildingFlags flags, DynamicBuffer<SubObject> subObjects, int maxDepth = 10)
             {
                 if (--maxDepth >= 0)
@@ -979,129 +958,129 @@ namespace LandValueOverhaul.Systems
                 }
             }
 
-            // Token: 0x0400B868 RID: 47208
+            // Token: 0x0400BC8C RID: 48268
             [ReadOnly]
             public ComponentTypeHandle<SpawnableBuildingData> m_SpawnableBuildingDataType;
 
-            // Token: 0x0400B869 RID: 47209
+            // Token: 0x0400BC8D RID: 48269
             [ReadOnly]
             public ComponentTypeHandle<ServiceUpgradeData> m_ServiceUpgradeDataType;
 
-            // Token: 0x0400B86A RID: 47210
+            // Token: 0x0400BC8E RID: 48270
             [ReadOnly]
             public ComponentTypeHandle<ExtractorFacilityData> m_ExtractorFacilityDataType;
 
-            // Token: 0x0400B86B RID: 47211
+            // Token: 0x0400BC8F RID: 48271
             [ReadOnly]
             public ComponentTypeHandle<ConsumptionData> m_ConsumptionDataType;
 
-            // Token: 0x0400B86C RID: 47212
+            // Token: 0x0400BC90 RID: 48272
             [ReadOnly]
             public ComponentTypeHandle<WorkplaceData> m_WorkplaceDataType;
 
-            // Token: 0x0400B86D RID: 47213
+            // Token: 0x0400BC91 RID: 48273
             [ReadOnly]
             public ComponentTypeHandle<WaterPumpingStationData> m_WaterPumpingStationDataType;
 
-            // Token: 0x0400B86E RID: 47214
+            // Token: 0x0400BC92 RID: 48274
             [ReadOnly]
             public ComponentTypeHandle<WaterTowerData> m_WaterTowerDataType;
 
-            // Token: 0x0400B86F RID: 47215
+            // Token: 0x0400BC93 RID: 48275
             [ReadOnly]
             public ComponentTypeHandle<SewageOutletData> m_SewageOutletDataType;
 
-            // Token: 0x0400B870 RID: 47216
+            // Token: 0x0400BC94 RID: 48276
             [ReadOnly]
             public ComponentTypeHandle<WastewaterTreatmentPlantData> m_WastewaterTreatmentPlantDataType;
 
-            // Token: 0x0400B871 RID: 47217
+            // Token: 0x0400BC95 RID: 48277
             [ReadOnly]
             public ComponentTypeHandle<TransformerData> m_TransformerDataType;
 
-            // Token: 0x0400B872 RID: 47218
+            // Token: 0x0400BC96 RID: 48278
             [ReadOnly]
             public ComponentTypeHandle<ParkingFacilityData> m_ParkingFacilityDataType;
 
-            // Token: 0x0400B873 RID: 47219
+            // Token: 0x0400BC97 RID: 48279
             [ReadOnly]
             public ComponentTypeHandle<PublicTransportStationData> m_PublicTransportStationDataType;
 
-            // Token: 0x0400B874 RID: 47220
+            // Token: 0x0400BC98 RID: 48280
             [ReadOnly]
             public ComponentTypeHandle<CargoTransportStationData> m_CargoTransportStationDataType;
 
-            // Token: 0x0400B875 RID: 47221
+            // Token: 0x0400BC99 RID: 48281
             [ReadOnly]
             public BufferTypeHandle<SubNet> m_SubNetType;
 
-            // Token: 0x0400B876 RID: 47222
+            // Token: 0x0400BC9A RID: 48282
             [ReadOnly]
             public BufferTypeHandle<SubObject> m_SubObjectType;
 
-            // Token: 0x0400B877 RID: 47223
+            // Token: 0x0400BC9B RID: 48283
             [ReadOnly]
             public BufferTypeHandle<SubMesh> m_SubMeshType;
 
-            // Token: 0x0400B878 RID: 47224
+            // Token: 0x0400BC9C RID: 48284
             public ComponentTypeHandle<BuildingData> m_BuildingDataType;
 
-            // Token: 0x0400B879 RID: 47225
+            // Token: 0x0400BC9D RID: 48285
             public BufferTypeHandle<Effect> m_EffectType;
 
-            // Token: 0x0400B87A RID: 47226
+            // Token: 0x0400BC9E RID: 48286
             [ReadOnly]
             public ComponentLookup<NetData> m_NetData;
 
-            // Token: 0x0400B87B RID: 47227
+            // Token: 0x0400BC9F RID: 48287
             [ReadOnly]
             public ComponentLookup<SpawnLocationData> m_SpawnLocationData;
 
-            // Token: 0x0400B87C RID: 47228
+            // Token: 0x0400BCA0 RID: 48288
             [ReadOnly]
             public ComponentLookup<MeshData> m_MeshData;
 
-            // Token: 0x0400B87D RID: 47229
+            // Token: 0x0400BCA1 RID: 48289
             [ReadOnly]
             public ComponentLookup<EffectData> m_EffectData;
 
-            // Token: 0x0400B87E RID: 47230
+            // Token: 0x0400BCA2 RID: 48290
             [ReadOnly]
             public ComponentLookup<VFXData> m_VFXData;
 
-            // Token: 0x0400B87F RID: 47231
+            // Token: 0x0400BCA3 RID: 48291
             [ReadOnly]
             public BufferLookup<AudioSourceData> m_AudioSourceData;
 
-            // Token: 0x0400B880 RID: 47232
+            // Token: 0x0400BCA4 RID: 48292
             [ReadOnly]
             public ComponentLookup<AudioSpotData> m_AudioSpotData;
 
-            // Token: 0x0400B881 RID: 47233
+            // Token: 0x0400BCA5 RID: 48293
             [ReadOnly]
             public ComponentLookup<AudioEffectData> m_AudioEffectData;
 
-            // Token: 0x0400B882 RID: 47234
+            // Token: 0x0400BCA6 RID: 48294
             [ReadOnly]
             public BufferLookup<SubObject> m_SubObjects;
 
-            // Token: 0x0400B883 RID: 47235
+            // Token: 0x0400BCA7 RID: 48295
             [ReadOnly]
             public RandomSeed m_RandomSeed;
 
-            // Token: 0x0400B884 RID: 47236
+            // Token: 0x0400BCA8 RID: 48296
             [ReadOnly]
             public NativeArray<ArchetypeChunk> m_Chunks;
 
-            // Token: 0x0400B885 RID: 47237
+            // Token: 0x0400BCA9 RID: 48297
             [ReadOnly]
             public BuildingConfigurationData m_BuildingConfigurationData;
         }
 
-        // Token: 0x020017EA RID: 6122
+        // Token: 0x020018CD RID: 6349
         private struct TypeHandle
         {
-            // Token: 0x06006724 RID: 26404 RVA: 0x0041A5B8 File Offset: 0x004187B8
+            // Token: 0x06006CA4 RID: 27812 RVA: 0x004347A0 File Offset: 0x004329A0
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void __AssignHandles(ref SystemState state)
             {
@@ -1149,162 +1128,162 @@ namespace LandValueOverhaul.Systems
                 this.__Game_Prefabs_SubObject_RO_BufferLookup = state.GetBufferLookup<SubObject>(true);
             }
 
-            // Token: 0x0400B886 RID: 47238
+            // Token: 0x0400BCAA RID: 48298
             [ReadOnly]
             public EntityTypeHandle __Unity_Entities_Entity_TypeHandle;
 
-            // Token: 0x0400B887 RID: 47239
+            // Token: 0x0400BCAB RID: 48299
             [ReadOnly]
             public ComponentTypeHandle<PrefabData> __Game_Prefabs_PrefabData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B888 RID: 47240
+            // Token: 0x0400BCAC RID: 48300
             public ComponentTypeHandle<BuildingData> __Game_Prefabs_BuildingData_RW_ComponentTypeHandle;
 
-            // Token: 0x0400B889 RID: 47241
+            // Token: 0x0400BCAD RID: 48301
             public ComponentTypeHandle<BuildingExtensionData> __Game_Prefabs_BuildingExtensionData_RW_ComponentTypeHandle;
 
-            // Token: 0x0400B88A RID: 47242
+            // Token: 0x0400BCAE RID: 48302
             public ComponentTypeHandle<BuildingTerraformData> __Game_Prefabs_BuildingTerraformData_RW_ComponentTypeHandle;
 
-            // Token: 0x0400B88B RID: 47243
+            // Token: 0x0400BCAF RID: 48303
             public ComponentTypeHandle<ConsumptionData> __Game_Prefabs_ConsumptionData_RW_ComponentTypeHandle;
 
-            // Token: 0x0400B88C RID: 47244
+            // Token: 0x0400BCB0 RID: 48304
             public ComponentTypeHandle<ObjectGeometryData> __Game_Prefabs_ObjectGeometryData_RW_ComponentTypeHandle;
 
-            // Token: 0x0400B88D RID: 47245
+            // Token: 0x0400BCB1 RID: 48305
             [ReadOnly]
             public ComponentTypeHandle<SpawnableBuildingData> __Game_Prefabs_SpawnableBuildingData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B88E RID: 47246
+            // Token: 0x0400BCB2 RID: 48306
             [ReadOnly]
             public ComponentTypeHandle<SignatureBuildingData> __Game_Prefabs_SignatureBuildingData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B88F RID: 47247
+            // Token: 0x0400BCB3 RID: 48307
             public ComponentTypeHandle<PlaceableObjectData> __Game_Prefabs_PlaceableObjectData_RW_ComponentTypeHandle;
 
-            // Token: 0x0400B890 RID: 47248
+            // Token: 0x0400BCB4 RID: 48308
             [ReadOnly]
             public ComponentTypeHandle<ServiceUpgradeData> __Game_Prefabs_ServiceUpgradeData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B891 RID: 47249
+            // Token: 0x0400BCB5 RID: 48309
             [ReadOnly]
             public ComponentTypeHandle<BuildingPropertyData> __Game_Prefabs_BuildingPropertyData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B892 RID: 47250
+            // Token: 0x0400BCB6 RID: 48310
             [ReadOnly]
             public ComponentTypeHandle<WaterPoweredData> __Game_Prefabs_WaterPoweredData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B893 RID: 47251
+            // Token: 0x0400BCB7 RID: 48311
             [ReadOnly]
             public ComponentTypeHandle<SewageOutletData> __Game_Prefabs_SewageOutletData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B894 RID: 47252
+            // Token: 0x0400BCB8 RID: 48312
             [ReadOnly]
             public BufferTypeHandle<ServiceUpgradeBuilding> __Game_Prefabs_ServiceUpgradeBuilding_RO_BufferTypeHandle;
 
-            // Token: 0x0400B895 RID: 47253
+            // Token: 0x0400BCB9 RID: 48313
             [ReadOnly]
             public ComponentTypeHandle<CollectedServiceBuildingBudgetData> __Game_Simulation_CollectedServiceBuildingBudgetData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B896 RID: 47254
+            // Token: 0x0400BCBA RID: 48314
             public BufferTypeHandle<ServiceUpkeepData> __Game_Prefabs_ServiceUpkeepData_RW_BufferTypeHandle;
 
-            // Token: 0x0400B897 RID: 47255
+            // Token: 0x0400BCBB RID: 48315
             public ComponentLookup<ZoneData> __Game_Prefabs_ZoneData_RW_ComponentLookup;
 
-            // Token: 0x0400B898 RID: 47256
+            // Token: 0x0400BCBC RID: 48316
             [ReadOnly]
             public ComponentLookup<ZoneServiceConsumptionData> __Game_Prefabs_ZoneServiceConsumptionData_RO_ComponentLookup;
 
-            // Token: 0x0400B899 RID: 47257
+            // Token: 0x0400BCBD RID: 48317
             [ReadOnly]
             public ComponentTypeHandle<ExtractorFacilityData> __Game_Prefabs_ExtractorFacilityData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B89A RID: 47258
+            // Token: 0x0400BCBE RID: 48318
             [ReadOnly]
             public ComponentTypeHandle<ConsumptionData> __Game_Prefabs_ConsumptionData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B89B RID: 47259
+            // Token: 0x0400BCBF RID: 48319
             [ReadOnly]
             public ComponentTypeHandle<WorkplaceData> __Game_Prefabs_WorkplaceData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B89C RID: 47260
+            // Token: 0x0400BCC0 RID: 48320
             [ReadOnly]
             public ComponentTypeHandle<WaterPumpingStationData> __Game_Prefabs_WaterPumpingStationData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B89D RID: 47261
+            // Token: 0x0400BCC1 RID: 48321
             [ReadOnly]
             public ComponentTypeHandle<WaterTowerData> __Game_Prefabs_WaterTowerData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B89E RID: 47262
+            // Token: 0x0400BCC2 RID: 48322
             [ReadOnly]
             public ComponentTypeHandle<WastewaterTreatmentPlantData> __Game_Prefabs_WastewaterTreatmentPlantData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B89F RID: 47263
+            // Token: 0x0400BCC3 RID: 48323
             [ReadOnly]
             public ComponentTypeHandle<TransformerData> __Game_Prefabs_TransformerData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B8A0 RID: 47264
+            // Token: 0x0400BCC4 RID: 48324
             [ReadOnly]
             public ComponentTypeHandle<ParkingFacilityData> __Game_Prefabs_ParkingFacilityData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B8A1 RID: 47265
+            // Token: 0x0400BCC5 RID: 48325
             [ReadOnly]
             public ComponentTypeHandle<PublicTransportStationData> __Game_Prefabs_PublicTransportStationData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B8A2 RID: 47266
+            // Token: 0x0400BCC6 RID: 48326
             [ReadOnly]
             public ComponentTypeHandle<CargoTransportStationData> __Game_Prefabs_CargoTransportStationData_RO_ComponentTypeHandle;
 
-            // Token: 0x0400B8A3 RID: 47267
+            // Token: 0x0400BCC7 RID: 48327
             [ReadOnly]
             public BufferTypeHandle<SubNet> __Game_Prefabs_SubNet_RO_BufferTypeHandle;
 
-            // Token: 0x0400B8A4 RID: 47268
+            // Token: 0x0400BCC8 RID: 48328
             [ReadOnly]
             public BufferTypeHandle<SubObject> __Game_Prefabs_SubObject_RO_BufferTypeHandle;
 
-            // Token: 0x0400B8A5 RID: 47269
+            // Token: 0x0400BCC9 RID: 48329
             [ReadOnly]
             public BufferTypeHandle<SubMesh> __Game_Prefabs_SubMesh_RO_BufferTypeHandle;
 
-            // Token: 0x0400B8A6 RID: 47270
+            // Token: 0x0400BCCA RID: 48330
             public BufferTypeHandle<Effect> __Game_Prefabs_Effect_RW_BufferTypeHandle;
 
-            // Token: 0x0400B8A7 RID: 47271
+            // Token: 0x0400BCCB RID: 48331
             [ReadOnly]
             public ComponentLookup<NetData> __Game_Prefabs_NetData_RO_ComponentLookup;
 
-            // Token: 0x0400B8A8 RID: 47272
+            // Token: 0x0400BCCC RID: 48332
             [ReadOnly]
             public ComponentLookup<SpawnLocationData> __Game_Prefabs_SpawnLocationData_RO_ComponentLookup;
 
-            // Token: 0x0400B8A9 RID: 47273
+            // Token: 0x0400BCCD RID: 48333
             [ReadOnly]
             public ComponentLookup<MeshData> __Game_Prefabs_MeshData_RO_ComponentLookup;
 
-            // Token: 0x0400B8AA RID: 47274
+            // Token: 0x0400BCCE RID: 48334
             [ReadOnly]
             public ComponentLookup<EffectData> __Game_Prefabs_EffectData_RO_ComponentLookup;
 
-            // Token: 0x0400B8AB RID: 47275
+            // Token: 0x0400BCCF RID: 48335
             [ReadOnly]
             public ComponentLookup<VFXData> __Game_Prefabs_VFXData_RO_ComponentLookup;
 
-            // Token: 0x0400B8AC RID: 47276
+            // Token: 0x0400BCD0 RID: 48336
             [ReadOnly]
             public BufferLookup<AudioSourceData> __Game_Prefabs_AudioSourceData_RO_BufferLookup;
 
-            // Token: 0x0400B8AD RID: 47277
+            // Token: 0x0400BCD1 RID: 48337
             [ReadOnly]
             public ComponentLookup<AudioSpotData> __Game_Prefabs_AudioSpotData_RO_ComponentLookup;
 
-            // Token: 0x0400B8AE RID: 47278
+            // Token: 0x0400BCD2 RID: 48338
             [ReadOnly]
             public ComponentLookup<AudioEffectData> __Game_Prefabs_AudioEffectData_RO_ComponentLookup;
 
-            // Token: 0x0400B8AF RID: 47279
+            // Token: 0x0400BCD3 RID: 48339
             [ReadOnly]
             public BufferLookup<SubObject> __Game_Prefabs_SubObject_RO_BufferLookup;
         }
