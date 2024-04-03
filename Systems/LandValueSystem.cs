@@ -31,6 +31,19 @@ namespace LandValueOverhaul.Systems
     public partial class LandValueSystem : CellMapSystem<LandValueCell>, IJobSerializable
     {
         // Token: 0x06005838 RID: 22584 RVA: 0x00336289 File Offset: 0x00334489
+        public new CellMapData<LandValueCell> GetData(bool readOnly, out JobHandle dependencies)
+        {
+            dependencies = (readOnly ? this.m_WriteDependencies : JobHandle.CombineDependencies(this.m_ReadDependencies, this.m_WriteDependencies));
+            
+            CellMapData<LandValueCell> data = new CellMapData<LandValueCell>
+            {
+                m_Buffer = this.m_Map,
+                m_CellSize = CellMapSystem<LandValueCell>.kMapSize / this.m_TextureSize,
+                m_TextureSize = this.m_TextureSize
+            };
+            return data;
+        }
+
         public override int GetUpdateInterval(SystemUpdatePhase phase)
         {
             return 128;

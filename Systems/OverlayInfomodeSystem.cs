@@ -351,6 +351,7 @@ namespace LandValueOverhaul.Systems
             {
                 int num;
                 num = this.m_ActiveData.m_Index - 1;
+                Mod.log.Info($"{this.m_MapData.m_TextureSize.x}, {this.m_MapData.m_TextureSize.y}, {num}");
                 for (int i = 0; i < this.m_MapData.m_TextureSize.y; i++)
                 {
                     for (int j = 0; j < this.m_MapData.m_TextureSize.x; j++)
@@ -360,6 +361,7 @@ namespace LandValueOverhaul.Systems
                         LandValueCell landValueCell;
                         landValueCell = this.m_MapData.m_Buffer[num2];
                         this.m_TextureData[num2 * 4 + num] = (byte)math.clamp(Mathf.RoundToInt(landValueCell.m_LandValue * 0.51f), 0, 255);
+                        Mod.log.Info($"{landValueCell.m_LandValue}");
                     }
                 }
             }
@@ -579,7 +581,7 @@ namespace LandValueOverhaul.Systems
 
         private NaturalResourceSystem m_NaturalResourceSystem;
 
-        private LandValueSystem m_LandValueSystem;
+        private Game.Simulation.LandValueSystem m_LandValueSystem;
 
         private PopulationToGridSystem m_PopulationToGridSystem;
 
@@ -617,7 +619,7 @@ namespace LandValueOverhaul.Systems
             this.m_TelecomCoverageSystem = base.World.GetOrCreateSystemManaged<TelecomPreviewSystem>();
             this.m_NaturalResourceSystem = base.World.GetOrCreateSystemManaged<NaturalResourceSystem>();
             this.m_ToolSystem = base.World.GetOrCreateSystemManaged<ToolSystem>();
-            this.m_LandValueSystem = base.World.GetOrCreateSystemManaged<LandValueSystem>();
+            this.m_LandValueSystem = base.World.GetOrCreateSystemManaged<Game.Simulation.LandValueSystem>();
             this.m_PopulationToGridSystem = base.World.GetOrCreateSystemManaged<PopulationToGridSystem>();
             this.m_AvailabilityInfoToGridSystem = base.World.GetOrCreateSystemManaged<AvailabilityInfoToGridSystem>();
             this.m_TerrainTexture = new Texture2D(1, 1, TextureFormat.RGBA32, mipChain: false, linear: true)
@@ -718,6 +720,7 @@ namespace LandValueOverhaul.Systems
         [Preserve]
         protected override void OnUpdate()
         {
+            Mod.log.Info("Overlay updated");
             this.m_TerrainRenderSystem.overrideOverlaymap = null;
             this.m_TerrainRenderSystem.overlayExtramap = null;
             this.m_TerrainRenderSystem.overlayArrowMask = default(float4);

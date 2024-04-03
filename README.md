@@ -55,6 +55,9 @@ This mod makes a **thorough overhaul** on the game's **land value update mechani
 * Modified systems: BuildingInitializeSystem, BuildingUpkeepSystem, LandValueSystem, PropertyRenterSystem, RentAdjustSystem, LandValueDebugSystem, LandValueTooltipSystem, OverlayInfomodeSystem.
 
 ## Changelog
+- v1.5.0
+
+  * Fix a bug that led to colorless info view and the land value node-level debug view not showing up.
 
 - v1.5.0
 

@@ -16,7 +16,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using static Game.Rendering.Debug.RenderPrefabRenderer;
@@ -108,5 +111,43 @@ namespace LandValueOverhaul.Patches
             return false;
         }
 
+        [HarmonyPatch(typeof(CellMapSystem<LandValueCell>), "AddReader")]
+        [HarmonyPrefix]
+        public static bool LandValueSystem_AddReader(CellMapSystem<LandValueCell> __instance, JobHandle jobHandle)
+        {
+            string name = __instance.GetType().FullName;
+            if (name == "Game.Simulation.LandValueSystem")
+            { 
+                __instance.World.GetExistingSystemManaged<LandValueOverhaul.Systems.LandValueSystem>().AddReader(jobHandle);
+                return false;
+            }
+            return true;
+        }
+        
+        [HarmonyPatch(typeof(CellMapSystem<LandValueCell>), "GetData")]
+        [HarmonyPrefix]
+        public static bool LandValueSystem_GetData(CellMapSystem<LandValueCell> __instance, ref CellMapData<LandValueCell> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            string name = __instance.GetType().FullName;
+            if (name == "Game.Simulation.LandValueSystem")
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.LandValueSystem>().GetData(readOnly, out dependencies);
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(CellMapSystem<LandValueCell>), "GetMap")]
+        [HarmonyPrefix]
+        public static bool LandValueSystem_GetMap(CellMapSystem<LandValueCell> __instance, ref NativeArray<LandValueCell> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            string name = __instance.GetType().FullName;
+            if (name == "Game.Simulation.LandValueSystem")
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.LandValueSystem>().GetMap(readOnly, out dependencies);
+                return false;
+            }
+            return true;
+        }
     }
 }

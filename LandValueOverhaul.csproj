@@ -19,6 +19,11 @@
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<Compile Remove="Systems\OverlayInfomodeSystem.cs" />
+		<Compile Remove="Systems\LandValueDebugSystem.cs" />
+	</ItemGroup>
+
 
 	<PropertyGroup>
 		<LangVersion>8.0</LangVersion>
