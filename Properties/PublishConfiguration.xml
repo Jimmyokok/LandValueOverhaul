@@ -9,6 +9,10 @@
 	<!--LongDescription Value="Overhaul on the game's land value, rent & building upgrade mechanisms." /-->
 	<LongDescription>Overhaul on the game's land value, rent and building upgrade mechanisms.
 
+## Latest Update(1.5.3)
+
+* Fix a bug that causes LV to endlessly increase where there is no healthcare coverage.
+
 ## Why needed?
 
 The vanilla land value system, along with the rent and building upgrade system, are designed without careful thoughts and lack sufficient testing and polishing, no matter before or after the game update 1.1.0. Before 1.1.0, the market-based land value system has led to:
@@ -44,8 +48,9 @@ This mod makes a **thorough overhaul** on the game's **land value update mechani
 		
 ## Known Issues
 
-* STILL HIGH RENT: The building upkeep reduction sometimes could not be correctly loaded. I have encountered this problem during development, and it it likely due to a bug in PDXMods playset management. I have resolved it by simply deleting everything related to PDXMods and manually installing the mod into the Mods folder.
+* STILL HIGH RENT: The building upkeep reduction sometimes could not be correctly loaded, resulting in high rent for residential zones. This issue randomly happens to everyone and is likely due to a bug in PDXMods. To avoid this, clean up the PDXMods environment and manually installing the mod will do. To check if the mod is correctly loaded, find the logging path (in some folder like C:/User/xxxx/AppData/LocalLow/Colossal Order/Cities Skylines II/Logs) and check LandValueOverhaul.log. If there is a line "Building upkeep modified!", the mod is correctly loaded.
 * COLORLESS INFO VIEW: It's a bug in LandValueOverhaul 1.5.0. Please update the mod to 1.5.1.
+
 ## Important Notes
 
 * Bankrupting stores and companies are still most likely to yield high-rent warnings, since they cannot pay anything.
@@ -71,13 +76,16 @@ This mod makes a **thorough overhaul** on the game's **land value update mechani
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.5.1" />
+	<ModVersion Value="1.5.3" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.1.*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
+v1.5.2 and 1.5.3
+* Fix a bug that causes LV to endlessly increase where there is no healthcare coverage.
+
 v1.5.1
 * Fix a bug that led to colorless info view and the land value node-level debug view not showing up.
 		

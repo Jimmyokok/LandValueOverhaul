@@ -55,7 +55,11 @@ This mod makes a **thorough overhaul** on the game's **land value update mechani
 * Modified systems: BuildingInitializeSystem, BuildingUpkeepSystem, LandValueSystem, PropertyRenterSystem, RentAdjustSystem, LandValueDebugSystem, LandValueTooltipSystem, OverlayInfomodeSystem.
 
 ## Changelog
-- v1.5.0
+- v1.5.2 and v1.5.3
+
+  * Fix a bug that causes LV to endlessly increase where there is no healthcare coverage.
+
+- v1.5.1
 
   * Fix a bug that led to colorless info view and the land value node-level debug view not showing up.
 
@@ -95,7 +99,7 @@ This mod makes a **thorough overhaul** on the game's **land value update mechani
   * Land value of road edges with no properties is fixed to zero.
 
 
-- 1.2.0
+- v1.2.0
   * Land value will not spread to road edges with no properties.
 
 

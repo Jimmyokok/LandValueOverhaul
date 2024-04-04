@@ -532,7 +532,7 @@ namespace LandValueOverhaul.Systems
                                     int num12 = buildingData.m_LotSize.x * buildingData.m_LotSize.y;
                                     if (buildingPropertyData.m_ResidentialProperties > 0)
                                     {
-                                        num12 = math.min(num12, Mathf.CeilToInt(math.sqrt((float)num * (float)buildingPropertyData.m_ResidentialProperties)));
+                                        num12 = math.min(num12, Mathf.CeilToInt(math.sqrt((float)num12 * (float)buildingPropertyData.m_ResidentialProperties)));
                                     }
                                     if (this.m_Attached.HasComponent(building))
                                     {
@@ -620,6 +620,7 @@ namespace LandValueOverhaul.Systems
                     }
                     num7 = num7 / (1f + pollution_factor);
                     float city_service_score = num7 / math.max(landValue.m_LandValue, 1f);
+                    
                     num9 += 1f / (1f + city_service_score) - 0.5f;
 
                     if (num10 > 0)
