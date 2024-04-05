@@ -52,7 +52,7 @@ This mod makes a **thorough overhaul** on the game's **land value update mechani
 
 ## Technical
 
-* Modified systems: BuildingInitializeSystem, BuildingUpkeepSystem, LandValueSystem, PropertyRenterSystem, RentAdjustSystem, LandValueDebugSystem, LandValueTooltipSystem, OverlayInfomodeSystem.
+* Modified systems: BuildingUpkeepSystem, LandValueSystem, PropertyRenterSystem, RentAdjustSystem, LandValueTooltipSystem.
 
 ## Changelog
 - v1.5.4
