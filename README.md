@@ -57,6 +57,10 @@ This mod makes a **thorough overhaul** on the game's **land value update mechani
 ## Changelog
 - v1.5.2 and v1.5.3
 
+  * Rewrite the building upkeep modification, so that it is guaranteed to be correctly loaded.
+
+- v1.5.2 and v1.5.3
+
   * Fix a bug that causes LV to endlessly increase where there is no healthcare coverage.
 
 - v1.5.1

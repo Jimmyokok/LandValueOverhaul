@@ -9,10 +9,6 @@
 	<!--LongDescription Value="Overhaul on the game's land value, rent & building upgrade mechanisms." /-->
 	<LongDescription>Overhaul on the game's land value, rent and building upgrade mechanisms.
 
-## Latest Update(1.5.3)
-
-* Fix a bug that causes LV to endlessly increase where there is no healthcare coverage.
-
 ## Why needed?
 
 The vanilla land value system, along with the rent and building upgrade system, are designed without careful thoughts and lack sufficient testing and polishing, no matter before or after the game update 1.1.0. Before 1.1.0, the market-based land value system has led to:
@@ -48,8 +44,7 @@ This mod makes a **thorough overhaul** on the game's **land value update mechani
 		
 ## Known Issues
 
-* STILL HIGH RENT: The building upkeep reduction sometimes could not be correctly loaded, resulting in high rent for residential zones. This issue randomly happens to everyone and is likely due to a bug in PDXMods. To avoid this, clean up the PDXMods environment and manually installing the mod will do. To check if the mod is correctly loaded, find the logging path (in some folder like C:/User/xxxx/AppData/LocalLow/Colossal Order/Cities Skylines II/Logs) and check LandValueOverhaul.log. If there is a line "Building upkeep modified!", the mod is correctly loaded.
-* COLORLESS INFO VIEW: It's a bug in LandValueOverhaul 1.5.0. Please update the mod to 1.5.1.
+* Currently NOT BepInEx compatible, will support soon.
 
 ## Important Notes
 
@@ -64,7 +59,7 @@ This mod makes a **thorough overhaul** on the game's **land value update mechani
 		
 ## Technical
 
-* Modified systems: BuildingInitializeSystem, BuildingUpkeepSystem, LandValueSystem, PropertyRenterSystem, RentAdjustSystem, LandValueDebugSystem, LandValueTooltipSystem, OverlayInfomodeSystem.
+* Modified systems: BuildingUpkeepSystem, LandValueSystem, PropertyRenterSystem, RentAdjustSystem, LandValueTooltipSystem.
 	</LongDescription>
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/Thumbnail.png" />
@@ -76,50 +71,15 @@ This mod makes a **thorough overhaul** on the game's **land value update mechani
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.5.3" />
+	<ModVersion Value="1.5.4" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.1.*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-v1.5.2 and 1.5.3
-* Fix a bug that causes LV to endlessly increase where there is no healthcare coverage.
-
-v1.5.1
-* Fix a bug that led to colorless info view and the land value node-level debug view not showing up.
-		
-v1.5.0
-* Mod migrated to PDXMods platform and updated for v1.1.0 of the game.
-* Combined the new vanilla land value system to the modded system.
-* Adjusted size computation for low-density residentials from 1x1 to 1xN.
-* Corrected the vanilla land value tooltip system.
-* Rebalance the building upgrade costs to be higher than previous versions but still lower than vanilla.
-
-v1.4.3
-* Fix a vanilla flaw that generates a wave of delivery trucks when the building upkeep is near zero.
-* Set lower bound for the building upkeep, so that per-area, per-renter and per-game-update upkeep values are larger than zero.
-
-v1.4.2
-* Fix a bug that causes the "road required" icon to be missing when placing parks.
-
-v1.4.1
-* Fix a bug that causes the "road required" icon to be missing when placing service buildings.
-
-v1.4.0
-* Game version 1.0.19f1 compatibility.
-
-v1.3.0
-* Land value of road edges with no properties is fixed to zero.
-
-v1.2.0
-* Land value will not spread to road edges with no properties.
-
-v1.1.0
-* Road edges with zero land value will not affect nearby road edges.
-
-v1.0.0
-* Mod exists.
+v1.5.4
+* Rewrite the building upkeep modification, so that it is guaranteed to be correctly loaded.
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
 	<ExternalLink Type="github" Url="https://github.com/Jimmyokok/LandValueOverhaul" />

@@ -11,6 +11,7 @@ using LandValueOverhaul.Systems;
 using System.IO;
 using System.Reflection;
 using Game.Simulation;
+using Game.Prefabs;
 
 namespace LandValueOverhaul
 {
@@ -72,7 +73,8 @@ namespace LandValueOverhaul
             //World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<LandValueOverhaul.Systems.OverlayInfomodeSystem>();
 
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<LandValueOverhaul.Systems.GarbageFeeFixSystem>();
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<LandValueOverhaul.Systems.LowRentUpkeepFixSystem>();
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<LandValueOverhaul.Systems.BuildingReinitializeSystem>();
+
             updateSystem?.UpdateAt<LandValueOverhaul.Systems.LandValueSystem>(SystemUpdatePhase.GameSimulation);
             updateSystem?.UpdateAt<LandValueOverhaul.Systems.PropertyRenterSystem>(SystemUpdatePhase.GameSimulation);
             updateSystem?.UpdateAt<LandValueOverhaul.Systems.RentAdjustSystem>(SystemUpdatePhase.GameSimulation);
@@ -83,8 +85,11 @@ namespace LandValueOverhaul
             //updateSystem?.UpdateAt<LandValueOverhaul.Systems.OverlayInfomodeSystem>(SystemUpdatePhase.PreCulling);
 
             updateSystem?.UpdateAfter<GarbageFeeFixSystem>(SystemUpdatePhase.PrefabUpdate);
+            updateSystem?.UpdateAt<GarbageFeeFixSystem>(SystemUpdatePhase.GameSimulation);
             updateSystem?.UpdateAfter<GarbageFeeFixSystem, CitySystem>(SystemUpdatePhase.GameSimulation);
-            updateSystem?.UpdateBefore<LowRentUpkeepFixSystem, LandValueOverhaul.Systems.BuildingInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
+            updateSystem?.UpdateAt<BuildingReinitializeSystem>(SystemUpdatePhase.PrefabUpdate);
+            updateSystem?.UpdateBefore<BuildingReinitializeSystem>(SystemUpdatePhase.PrefabReferences);
+            updateSystem?.UpdateAfter<BuildingReinitializeSystem, BuildingInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             _world = updateSystem.World;
         }
 
@@ -98,7 +103,7 @@ namespace LandValueOverhaul
             }
             instance = null;
             Patcher.Instance?.UnPatchAll();
-            SafelyRemove<LandValueOverhaul.Systems.BuildingInitializeSystem>();
+            SafelyRemove<LandValueOverhaul.Systems.BuildingReinitializeSystem>();
             SafelyRemove<LandValueOverhaul.Systems.BuildingUpkeepSystem>();
             SafelyRemove<LandValueOverhaul.Systems.LandValueSystem>();
 
@@ -109,7 +114,6 @@ namespace LandValueOverhaul
             SafelyRemove<LandValueOverhaul.Systems.PropertyRenterSystem>();
             SafelyRemove<LandValueOverhaul.Systems.RentAdjustSystem>();
             SafelyRemove<LandValueOverhaul.Systems.GarbageFeeFixSystem>();
-            SafelyRemove<LandValueOverhaul.Systems.LowRentUpkeepFixSystem>();
         }
     }
 }

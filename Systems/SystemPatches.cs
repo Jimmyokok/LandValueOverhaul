@@ -86,6 +86,7 @@ namespace LandValueOverhaul.Patches
             return false;
         }
 
+        /*
         [HarmonyPatch(typeof(Game.Prefabs.BuildingInitializeSystem), "OnCreate")]
         [HarmonyPrefix]
         public static bool BuildingInitializeSystem_OnCreate(Game.Prefabs.BuildingInitializeSystem __instance)
@@ -110,7 +111,7 @@ namespace LandValueOverhaul.Patches
         {
             return false;
         }
-
+        */
         [HarmonyPatch(typeof(CellMapSystem<LandValueCell>), "AddReader")]
         [HarmonyPrefix]
         public static bool LandValueSystem_AddReader(CellMapSystem<LandValueCell> __instance, JobHandle jobHandle)
