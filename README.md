@@ -55,7 +55,7 @@ This mod makes a **thorough overhaul** on the game's **land value update mechani
 * Modified systems: BuildingInitializeSystem, BuildingUpkeepSystem, LandValueSystem, PropertyRenterSystem, RentAdjustSystem, LandValueDebugSystem, LandValueTooltipSystem, OverlayInfomodeSystem.
 
 ## Changelog
-- v1.5.2 and v1.5.3
+- v1.5.4
 
   * Rewrite the building upkeep modification, so that it is guaranteed to be correctly loaded.
 
