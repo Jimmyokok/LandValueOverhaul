@@ -1,8 +1,8 @@
 > [!NOTE]
-> **LandValueOverhaul v1.5.0 is available via PDXMods.** The Bepinex version will be released very soon. Meanwhile, **feedbacks** are still needed and most welcomed.
+> **INCOMPATIBLE with the newest game update.** It is unclear if this mod is still needed after the economy rework. No update plan for now.
 
 > [!NOTE]
-> **地价机制大修 v1.5.0 已经在PMOD上线。**BepInEx版本将会很快发布。同时，关于本MOD的游戏体验，仍然需要更多玩家**反馈**。
+> **不兼容游戏版本更新。**不清楚经济大改后是否仍然需要此MOD，目前暂无更新计划。
 
 Overhaul on the game's land value, rent and building upgrade mechanisms.
 
