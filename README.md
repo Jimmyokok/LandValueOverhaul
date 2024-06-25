@@ -2,7 +2,7 @@
 > **INCOMPATIBLE with the newest game update.** It is unclear if this mod is still needed after the economy rework. No update plan for now.
 
 > [!NOTE]
-> **不兼容游戏版本更新。**不清楚经济大改后是否仍然需要此MOD，目前暂无更新计划。
+> **不兼容游戏版本更新**。不清楚经济大改后是否仍然需要此MOD，目前暂无更新计划。
 
 Overhaul on the game's land value, rent and building upgrade mechanisms.
 
